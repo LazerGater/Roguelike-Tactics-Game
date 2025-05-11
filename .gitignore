@@ -3,21 +3,25 @@
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
 .utmp/
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
+Roguelike-Tactics-Game/[Ll]ibrary/
+Roguelike-Tactics-Game/[Tt]emp/
+Roguelike-Tactics-Game/[Oo]bj/
+Roguelike-Tactics-Game/[Bb]uild/
+Roguelike-Tactics-Game/[Bb]uilds/
+Roguelike-Tactics-Game/[Ll]ogs/
+Roguelike-Tactics-Game/[Uu]ser[Ss]ettings/
 *.log
+
+
+# ignore the resources folder with all the assets
+Roguelike-Tactics-Game/Assets/LocalAssets/
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
-/[Mm]emoryCaptures/
+Roguelike-Tactics-Game/[Mm]emoryCaptures/
 
 # Recordings can get excessive in size
-/[Rr]ecordings/
+Roguelike-Tactics-Game/[Rr]ecordings/
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # /[Aa]ssets/AssetStoreTools*
@@ -48,6 +52,10 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
+.idea/
+.plastic/
+.DS_Store
+.collabignore
 
 # Unity3D generated meta files
 *.pidb.meta
@@ -66,10 +74,13 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+*.stacktrace
+*.dmp
+**/obj/
 
 # Packed Addressables
-/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+Roguelike-Tactics-Game/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
 # Temporary auto-generated Android Assets
-/[Aa]ssets/[Ss]treamingAssets/aa.meta
-/[Aa]ssets/[Ss]treamingAssets/aa/*
+Roguelike-Tactics-Game/[Aa]ssets/[Ss]treamingAssets/aa.meta
+Roguelike-Tactics-Game/[Aa]ssets/[Ss]treamingAssets/aa/*
