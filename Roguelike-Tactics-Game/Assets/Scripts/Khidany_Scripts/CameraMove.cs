@@ -14,5 +14,14 @@ public class CameraMove : MonoBehaviour
 
         Vector3 moveDirection = new Vector3(horizontal, vertical, 0f);
         transform.position += moveDirection * moveSpeed * Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            Debug.Log("Pressed W key");
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            Debug.Log("Pressed Up Arrow key");
+        }
     }
 }
