@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class PlayerUnit : MonoBehaviour
 {
+    private PlayerData dataRef;
+
     public int maxHP = 20;
     public int atk = 5;
     public int def = 2;
     public int speed = 3;
     public int luck = 1;
     public int dex = 2;
+    // public Sprite portait;
 
     public int maxMovePoints = 4;
     public SpriteRenderer spriteRenderer;
@@ -20,6 +23,8 @@ public class PlayerUnit : MonoBehaviour
     private bool isSelected = false;
     private List<GameObject> moveHighlights = new List<GameObject>();
 
+    public bool HasActed { get; private set; } = false;
+
     public void Init(GridMap g, Vector2Int startPos)
     {
         grid = g;
@@ -27,9 +32,33 @@ public class PlayerUnit : MonoBehaviour
         transform.position = grid.GetWorldPosition(gridPos.x, gridPos.y) + Vector3.one * (grid.CellSize / 2f);
         grid.MarkOccupied(gridPos); // Optional
     }
+    public void SetupFromData(PlayerData data)
+    {
+        dataRef = data;
+
+        maxHP = data.maxHP;
+        atk = data.atk;
+        def = data.def;
+        speed = data.speed;
+        luck = data.luck;
+        dex = data.dex;
+        maxMovePoints = data.maxMovePoints;
+    }
+
+    public PlayerData ExtractToData()
+    {
+        if (dataRef == null) return null;
+
+        dataRef.currentHP = maxHP; // Replace with actual HP if tracked elsewhere
+        return dataRef;
+    }
+
 
     private void Update()
     {
+        if (!BattlePrepUIManager.IsBattleActive)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mouseWorldPos = AshenUtil.GridItems.GetMouseWorldPosition();
@@ -49,6 +78,8 @@ public class PlayerUnit : MonoBehaviour
             }
         }
     }
+
+
 
 
     private void ShowMoveRange()
@@ -120,7 +151,16 @@ public class PlayerUnit : MonoBehaviour
         transform.position = end;
         gridPos = targetPos;
         grid.MarkOccupied(gridPos);
+
+        HasActed = true;
+        TurnManager.Instance.NotifyUnitActed(); 
+
     }
+    public void ResetTurn()
+    {
+        HasActed = false;
+    }
+
 
     public Vector2Int GetGridPosition() => gridPos;
 }
