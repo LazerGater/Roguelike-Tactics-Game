@@ -29,9 +29,24 @@ public class PlayerUnit : MonoBehaviour
     {
         grid = g;
         gridPos = startPos;
-        transform.position = grid.GetWorldPosition(gridPos.x, gridPos.y) + Vector3.one * (grid.CellSize / 2f);
-        grid.MarkOccupied(gridPos); // Optional
+        transform.position = grid.GetWorldPosition(gridPos.x, gridPos.y)
+                         + Vector3.one * (grid.CellSize / 2f);
+
+        // Abort if somebody is already standing here (should never happen, safeguards anyway)
+        if (!grid.TryMarkOccupied(gridPos))
+        {
+            Debug.LogError($"Spawn clash at {gridPos}! Destroying self.");
+            Destroy(gameObject);
+        }
     }
+
+    //  fire andforget safety net
+    private void OnDestroy()
+    {
+        if (grid != null)
+            grid.MarkUnoccupied(gridPos);
+    }
+
     public void SetupFromData(PlayerData data)
     {
         dataRef = data;

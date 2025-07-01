@@ -122,4 +122,11 @@ public class GridMap
     {
         return occupiedPositions.Contains(pos);
     }
+    public bool TryMarkOccupied(Vector2Int pos)
+    {
+        if (!IsInBounds(pos.x, pos.y)) return false;
+        return occupiedPositions.Add(pos);   // HashSet.Add returns false if duplicate
+    }
+
+
 }

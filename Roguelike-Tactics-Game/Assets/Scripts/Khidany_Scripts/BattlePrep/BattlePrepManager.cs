@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,37 +15,59 @@ public class BattlePreparationManager : MonoBehaviour
 
     private List<PlayerUnit> allUnits;
     private List<PlayerUnit> selectedUnits = new();
+    private int partyLimit;
 
-    public void Start()
+    public static event System.Action OnPartyChanged;
+
+    private void Start()
     {
-        allUnits = new List<PlayerUnit>(); // Clear - we use data now
-        selectedUnits.Clear();
+        // ----- pull map data once --------------------------------
+        var ts = FindFirstObjectByType<GridInitializer>();
+        startingTiles = new List<Vector2Int>(ts.AllySpawns);   
+        partyLimit = ts.PartyLimit;
 
+        // ----- build UI, preview grid, wire buttons --------------
         PopulateUnitUI();
+        RefreshGridPreview();
         HighlightStartTiles(true);
 
         battleButton.onClick.AddListener(OnBattleStart);
         forfeitButton.onClick.AddListener(OnForfeit);
+        OnPartyChanged?.Invoke();
     }
 
-
+    /* =======================  UI  ============================== */
 
     private void PopulateUnitUI()
     {
-        foreach (Transform child in unitListPanel)
-            Destroy(child.gameObject);
+        // clear previous children (supports scene reload)
+        foreach (Transform c in unitListPanel)
+            Destroy(c.gameObject);
 
+        // build one UI row per party member
         foreach (var data in PartyCarrier.Instance.playerParty)
         {
             GameObject go = Instantiate(unitUIPrefab, unitListPanel);
-            var controller = go.GetComponent<UnitListItemController>();
-            controller.Setup(data);
+            var item = go.GetComponent<UnitListItemController>();
+            item.Setup(data, OnUnitToggleRequest);   // callback below
         }
     }
-    public void RefreshGridPreview()
+    private void OnUnitToggleRequest(PlayerData data, bool add)
     {
-        // preview = true
-        GridManager.Instance.SpawnSelectedParty(startingTiles, true);
+        int currentlySelected = PartyCarrier.Instance.playerParty
+                                .Count(p => p.isSelectedForBattle);
+
+        if (add && currentlySelected >= partyLimit)
+        {
+            Debug.LogWarning($"Party limit of {partyLimit} reached.");
+            return;                           // click is ignored
+        }
+
+        // toggle the flag because the click is accepted
+        data.isSelectedForBattle = add;
+        OnPartyChanged?.Invoke();  // notifies UI to update
+
+        RefreshGridPreview();
     }
 
 
@@ -56,21 +79,20 @@ public class BattlePreparationManager : MonoBehaviour
         // Optional: mark as "locked in"
     }
 
-    private void HighlightStartTiles(bool on)
+    /* ==================  Preview & Spawn  ====================== */
+
+    public void RefreshGridPreview()
     {
-        foreach (var pos in startingTiles)
-        {
-            if (on)
-                GridManager.Instance.HighlightTile(pos); // Add method
-            else
-                GridManager.Instance.ClearTileHighlight(pos);
-        }
+        // true  = dummy units only (no TurnManager registration)
+        var gm = GridManager.Instance;
+        gm.SpawnSelectedParty(startingTiles, true);
     }
 
     private void OnBattleStart()
     {
-        // Actually spawn everyone now
-        GridManager.Instance.SpawnSelectedParty(startingTiles);
+        // final spawn; this time units are registered for the battle
+        var gm = GridManager.Instance;
+        gm.SpawnSelectedParty(startingTiles, false);
 
         battlePrepUI.SetActive(false);
         HighlightStartTiles(false);
@@ -79,9 +101,19 @@ public class BattlePreparationManager : MonoBehaviour
 
 
 
+
+    private void HighlightStartTiles(bool on)
+    {
+        foreach (var pos in startingTiles)
+        {
+            if (on) GridManager.Instance.HighlightTile(pos);
+            else GridManager.Instance.ClearTileHighlight(pos);
+        }
+    }
+
     private void OnForfeit()
     {
-        // Scene reload or main menu
+        // TODO: implement scene reload / return to main menu
     }
 }
 

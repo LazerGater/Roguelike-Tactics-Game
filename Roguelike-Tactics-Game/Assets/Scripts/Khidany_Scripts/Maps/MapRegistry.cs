@@ -3,9 +3,12 @@ using System.Collections.Generic;
 
 public static class MapRegistry
 {
-    public static readonly List<Func<int[,]>> MapLoaders = new List<Func<int[,]>>()
+    public static readonly List<Func<MapData>> MapLoaders = new List<Func<MapData>>
     {
-        () => SavedGridData.GridValues
+        () => new MapData(
+                SavedGridData.GridValues,
+                SavedGridData.AllySpawnPoints,
+                SavedGridData.PartyLimit) 
         // Add more here like "Mountain.GridValues,"
     };
 }
