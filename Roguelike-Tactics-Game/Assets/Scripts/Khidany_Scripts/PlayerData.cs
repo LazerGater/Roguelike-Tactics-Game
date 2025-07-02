@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -17,6 +18,10 @@ public class PlayerData
 
     public int maxMovePoints;
     public bool isSelectedForBattle = true;
+    public int priorityID;
+
+    public static IComparer<PlayerData> ByPriority =>
+      Comparer<PlayerData>.Create((a, b) => a.priorityID.CompareTo(b.priorityID));
 
     public PlayerData Clone()
     {
