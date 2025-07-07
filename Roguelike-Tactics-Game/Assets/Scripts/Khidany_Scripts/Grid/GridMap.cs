@@ -37,10 +37,10 @@ public class GridMap
             {
                 gridArray[x, y] = 1;
                 debugArray[x, y] = GridItems.CreateWorldText(
-                    gridArray[x, y].ToString(), null,
-                    GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f,
-                    20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center
-                );
+                   gridArray[x, y].ToString(), null,
+                   GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f,
+                   20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center
+               );
 
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
@@ -77,6 +77,7 @@ public class GridMap
         if (x >= 0 && y >= 0 && x < width && y < height)
         {
             gridArray[x, y] = Mathf.Max(1, value);
+
             debugArray[x, y].text = gridArray[x, y].ToString();
         }
     }

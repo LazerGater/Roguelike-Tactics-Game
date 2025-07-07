@@ -5,66 +5,36 @@ using UnityEngine.UI;
 
 public class UnitListItemController : MonoBehaviour
 {
-    [SerializeField] private Image portraitImage;
-    [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private TextMeshProUGUI hpText;
-    [SerializeField] private Button toggleButton;
+    public Image portraitImage;
+    public TextMeshProUGUI nameText;
+    public Button upButton;
+    public Button downButton;
 
     private PlayerData data;
+    private Action<PlayerData> onUp;
+    private Action<PlayerData> onDown;
 
-    private Action<PlayerData, bool> onToggleRequest;
-
-    public void Setup(PlayerData unitData)
-    {
-        InternalSetup(unitData);
-    }
-
-
-    public void Setup(PlayerData unitData, Action<PlayerData, bool> toggleCallback)
-    {
-        onToggleRequest = toggleCallback;
-        InternalSetup(unitData);
-    }
-
-
-    private void InternalSetup(PlayerData unitData)
+    public void Setup(
+        PlayerData unitData,
+        Action<PlayerData> moveUpCallback,
+        Action<PlayerData> moveDownCallback
+    )
     {
         data = unitData;
+        onUp = moveUpCallback;
+        onDown = moveDownCallback;
 
         portraitImage.sprite = data.portrait;
         nameText.text = data.unitName;
-        hpText.text = $"HP: {data.currentHP}/{data.maxHP}";
 
-        UpdateVisual();
+        upButton.onClick.RemoveAllListeners();
+        upButton.onClick.AddListener(() => onUp(data));
 
-        toggleButton.onClick.RemoveAllListeners();
-        toggleButton.onClick.AddListener(ToggleSelected);
-    }
+        downButton.onClick.RemoveAllListeners();
+        downButton.onClick.AddListener(() => onDown(data));
 
-    private void ToggleSelected()
-    {
-        bool add = !data.isSelectedForBattle;
-
-        if (onToggleRequest != null)
-        {
-            onToggleRequest.Invoke(data, add);      // manager decides
-        }
-        else
-        {
-            data.isSelectedForBattle = add;         // fallback
-            FindFirstObjectByType<BattlePreparationManager>()?.RefreshGridPreview();
-        }
-
-        UpdateVisual();                             // reflect final flag
-    }
-
-
-    private void UpdateVisual()
-    {
-        // Gray out when not selected
-        Color tint = data.isSelectedForBattle ? Color.white : new Color(0.7f, 0.7f, 0.7f);
-        portraitImage.color = tint;
-        nameText.color = tint;
-        hpText.color = tint;
+        // disable at ends
+        upButton.interactable = data.priorityID > 0;
+        downButton.interactable = true; // optional: disable if at bottom
     }
 }

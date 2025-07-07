@@ -1,50 +1,78 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(UnitMover))]
 public class PlayerUnit : MonoBehaviour
 {
+    /* -------------------------------------------------
+       1. Data 
+    ----------------------------------------------- */
     private PlayerData dataRef;
 
+    // core stats (will be overwritten by SetupFromData)
     public int maxHP = 20;
     public int atk = 5;
     public int def = 2;
     public int speed = 3;
     public int luck = 1;
     public int dex = 2;
-    // public Sprite portait;
 
+    // mobility
     public int maxMovePoints = 4;
     public SpriteRenderer spriteRenderer;
     [SerializeField] private GameObject moveHighlightPrefab;
 
+    /* -------------------------------------------
+       2. Grid related fields
+       --------------------------------------------- */
     private GridMap grid;
     private Vector2Int gridPos;
+    public void SetGridPos(Vector2Int p) => gridPos = p;   // used by UnitMover
+
+    /* -----------------------------------------
+       3. Selection / Move range helpers
+       ------------------------------------------ */
     private bool isSelected = false;
-    private List<GameObject> moveHighlights = new List<GameObject>();
+    private readonly List<GameObject> moveHighlights = new List<GameObject>();
 
+    private static readonly Vector2Int[] DIRS = {
+        new Vector2Int( 1, 0), new Vector2Int(-1, 0),
+        new Vector2Int( 0, 1), new Vector2Int( 0,-1)
+    };
+
+    /* -------------------------------------
+       4. Turn state
+       -------------------------------------- */
     public bool HasActed { get; private set; } = false;
+    public void MarkActed() => HasActed = true;   // called by UnitMover
+    public void ResetTurn() => HasActed = false;
 
+    /* -------------------------------------
+       5. Initialisation
+       ------------------------------------ */
     public void Init(GridMap g, Vector2Int startPos)
     {
         grid = g;
         gridPos = startPos;
-        transform.position = grid.GetWorldPosition(gridPos.x, gridPos.y)
-                         + Vector3.one * (grid.CellSize / 2f);
 
-        // Abort if somebody is already standing here (should never happen, safeguards anyway)
+        transform.position = grid.GetWorldPosition(gridPos.x, gridPos.y)
+                           + Vector3.one * (grid.CellSize / 2f);
+
+        // guard: duplicate occupancy
         if (!grid.TryMarkOccupied(gridPos))
         {
             Debug.LogError($"Spawn clash at {gridPos}! Destroying self.");
             Destroy(gameObject);
         }
+
+        // pass grid to UnitMover
+        GetComponent<UnitMover>().Init(grid);
     }
 
-    //  fire andforget safety net
     private void OnDestroy()
     {
-        if (grid != null)
-            grid.MarkUnoccupied(gridPos);
+        if (grid != null) grid.MarkUnoccupied(gridPos);
     }
 
     public void SetupFromData(PlayerData data)
@@ -63,63 +91,47 @@ public class PlayerUnit : MonoBehaviour
     public PlayerData ExtractToData()
     {
         if (dataRef == null) return null;
-
-        dataRef.currentHP = maxHP; // Replace with actual HP if tracked elsewhere
+        dataRef.currentHP = maxHP;         
         return dataRef;
     }
 
-
+    /* ------------------------------------
+       6. Unity Update - input / selection
+       ------------------------------------- */
     private void Update()
     {
-        if (!BattlePrepUIManager.IsBattleActive)
+        if (TurnManager.Instance == null || !TurnManager.Instance.IsBattleActive)
             return;
+        if (HasActed) return;                            // already moved
 
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 mouseWorldPos = AshenUtil.GridItems.GetMouseWorldPosition();
-            grid.GetXY(mouseWorldPos, out int clickX, out int clickY);
-            Vector2Int clickedPos = new Vector2Int(clickX, clickY);
+            Vector3 mouseWorld = AshenUtil.GridItems.GetMouseWorldPosition();
+            grid.GetXY(mouseWorld, out int cx, out int cy);
+            Vector2Int clicked = new Vector2Int(cx, cy);
 
-            if (clickedPos == gridPos)
+            // click own tile: (de)select
+            if (clicked == gridPos)
             {
                 GridManager.Instance.SelectUnit(this);
                 return;
             }
 
-            if (isSelected && IsHighlighted(clickedPos))
+            // click highlighted tile -> move
+            if (isSelected && IsHighlighted(clicked))
             {
-                StartCoroutine(MoveToPosition(clickedPos));
-                GridManager.Instance.ClearSelectedUnit(); // Deselect after move
+                var path = PlayerPathfinder.FindPath(
+                    grid, gridPos, clicked, maxMovePoints);
+
+                if (path != null)
+                    GetComponent<UnitMover>().MoveAlong(path);
             }
         }
     }
 
-
-
-
-    private void ShowMoveRange()
-    {
-        ClearMoveRange();
-        for (int x = 0; x < grid.width; x++)
-        {
-            for (int y = 0; y < grid.height; y++)
-            {
-                Vector2Int pos = new Vector2Int(x, y);
-                if (!grid.IsInBounds(x, y)) continue;
-                if (grid.IsOccupied(pos)) continue;
-
-                int cost = grid.GetValue(x, y);
-                int dist = Mathf.Abs(pos.x - gridPos.x) + Mathf.Abs(pos.y - gridPos.y);
-                if (cost * dist <= maxMovePoints && cost > 0)
-                {
-                    Vector3 worldPos = grid.GetWorldPosition(x, y) + Vector3.one * (grid.CellSize / 2f);
-                    var highlight = Instantiate(moveHighlightPrefab, worldPos, Quaternion.identity);
-                    highlight.name = $"Highlight_{x}_{y}";
-                    moveHighlights.Add(highlight);
-                }
-            }
-        }
-    }
+    /* 
+       7. Selection helpers
+       */
     public void Select()
     {
         isSelected = true;
@@ -132,11 +144,57 @@ public class PlayerUnit : MonoBehaviour
         ClearMoveRange();
     }
 
+    /* -----------------------------------
+       8. Move‑range generation
+       --------------------------------- */
+    private void ShowMoveRange()
+    {
+        ClearMoveRange();
+        var costSoFar = new Dictionary<Vector2Int, int>();
+        var frontier = new Queue<Vector2Int>();
+
+        costSoFar[gridPos] = 0;
+        frontier.Enqueue(gridPos);
+
+        while (frontier.Count > 0)
+        {
+            Vector2Int cur = frontier.Dequeue();
+            int c0 = costSoFar[cur];
+
+            foreach (var dir in DIRS)
+            {
+                Vector2Int nxt = cur + dir;
+                if (!grid.IsInBounds(nxt.x, nxt.y)) continue;
+                if (grid.IsOccupied(nxt)) continue;
+
+                int tileCost = grid.GetValue(nxt.x, nxt.y);
+                if (tileCost <= 0) continue;
+
+                int c1 = c0 + tileCost;
+                if (c1 > maxMovePoints) continue;
+
+                if (costSoFar.TryGetValue(nxt, out int saved) && saved <= c1)
+                    continue;
+
+                costSoFar[nxt] = c1;
+                frontier.Enqueue(nxt);
+            }
+        }
+
+        foreach (var kvp in costSoFar)
+        {
+            if (kvp.Key == gridPos) continue;
+            Vector3 wp = grid.GetWorldPosition(kvp.Key.x, kvp.Key.y)
+                       + Vector3.one * (grid.CellSize / 2f);
+            var h = Instantiate(moveHighlightPrefab, wp, Quaternion.identity);
+            h.name = $"Highlight_{kvp.Key.x}_{kvp.Key.y}";
+            moveHighlights.Add(h);
+        }
+    }
 
     private void ClearMoveRange()
     {
-        foreach (var h in moveHighlights)
-            if (h) Destroy(h);
+        foreach (var h in moveHighlights) if (h) Destroy(h);
         moveHighlights.Clear();
     }
 
@@ -144,38 +202,13 @@ public class PlayerUnit : MonoBehaviour
     {
         return moveHighlights.Exists(obj =>
         {
-            var split = obj.name.Split('_');
-            return int.Parse(split[1]) == pos.x && int.Parse(split[2]) == pos.y;
+            var s = obj.name.Split('_');
+            return int.Parse(s[1]) == pos.x && int.Parse(s[2]) == pos.y;
         });
     }
 
-    private IEnumerator MoveToPosition(Vector2Int targetPos)
-    {
-        grid.MarkUnoccupied(gridPos);
-        Vector3 start = transform.position;
-        Vector3 end = grid.GetWorldPosition(targetPos.x, targetPos.y) + Vector3.one * (grid.CellSize / 2f);
-
-        float t = 0f;
-        while (t < 0.5f)
-        {
-            transform.position = Vector3.Lerp(start, end, t / 0.5f);
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = end;
-        gridPos = targetPos;
-        grid.MarkOccupied(gridPos);
-
-        HasActed = true;
-        TurnManager.Instance.NotifyUnitActed(); 
-
-    }
-    public void ResetTurn()
-    {
-        HasActed = false;
-    }
-
-
+    /* ---------------------------------------
+       9. Public helpers
+       ----------------------------------------- */
     public Vector2Int GetGridPosition() => gridPos;
 }

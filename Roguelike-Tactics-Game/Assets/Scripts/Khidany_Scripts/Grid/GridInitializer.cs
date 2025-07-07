@@ -15,6 +15,8 @@ public class GridInitializer : MonoBehaviour
 
     [SerializeField] private int cellSize = 5;
     [SerializeField] private GameObject cellVisualPrefab;
+    [SerializeField] private GridOverlay gridOverlayPrefab;
+
 
     private void Start()
     {
@@ -50,6 +52,10 @@ public class GridInitializer : MonoBehaviour
                     .name = $"Cell_{x}_{flippedY}";
             }
         }
+        var overlay = Instantiate(gridOverlayPrefab, transform);
+        overlay.BuildFromGrid(grid);
+        CameraZoom2D zoom = Camera.main.GetComponent<CameraZoom2D>();
+        if (zoom != null) zoom.ConfigureZoom(grid);
         Debug.Log($"Ally spawns for this map: {string.Join(", ", allySpawns)}");
 
     }

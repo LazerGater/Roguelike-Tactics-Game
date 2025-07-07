@@ -759,8 +759,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   portraitImage: {fileID: 8590580799002460420}
   nameText: {fileID: 3109907738699180991}
-  hpText: {fileID: 4954319933458884013}
-  toggleButton: {fileID: 0}
+  upButton: {fileID: 4276746626030525150}
+  downButton: {fileID: 1800411934718593574}
 --- !u!114 &2812347815344266759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -777,7 +777,7 @@ MonoBehaviour:
   m_MinWidth: -1
   m_MinHeight: -1
   m_PreferredWidth: 600
-  m_PreferredHeight: 350
+  m_PreferredHeight: 150
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
