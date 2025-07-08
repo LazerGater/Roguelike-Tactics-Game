@@ -10,9 +10,9 @@ public static class MapRegistry
         //        SavedGridData.AllySpawnPoints,
         //        SavedGridData.PartyLimit),
         () => new MapData(
-                PlainsCrossingGridData15x15.GridValues,
-                PlainsCrossingGridData15x15.AllySpawnPoints,
-                PlainsCrossingGridData15x15.PartyLimit)
+                PlainsCrossingGridData.GridValues,
+                PlainsCrossingGridData.AllySpawnPoints,
+                PlainsCrossingGridData.PartyLimit)
         // Add more here like "Mountain.GridValues,"
     };
 }

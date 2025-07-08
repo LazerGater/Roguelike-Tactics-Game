@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class PlainsCrossingGridData15x15
+public static class PlainsCrossingGridData
 {
     public static readonly int[,] GridValues = new int[,]
     {

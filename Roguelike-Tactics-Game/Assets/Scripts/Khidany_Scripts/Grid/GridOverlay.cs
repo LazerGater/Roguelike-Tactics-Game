@@ -18,10 +18,12 @@ public class GridOverlay : MonoBehaviour
 
     readonly List<LineRenderer> lines = new List<LineRenderer>();
 
+    bool built = false;
+
     /* ---------------- Runtime entry ---------------- */
     void Start()
     {
-        Build();                            // draw once when scene starts
+        if (!built) Build();                         // draw once when scene starts
     }
 
     /* Called by GridInitializer after it knows GridMap */
@@ -37,6 +39,9 @@ public class GridOverlay : MonoBehaviour
     /* ---------------- Core builder ----------------- */
     void Build()
     {
+        if (built) return;       // new guard
+        built = true;
+
         int needed = width + height + 2;
         EnsurePool(needed);
 
@@ -58,7 +63,6 @@ public class GridOverlay : MonoBehaviour
             ApplyLine(lines[i++], p0, p1);
         }
     }
-
     /* -------- helpers -------- */
     void EnsurePool(int count)
     {
