@@ -4,7 +4,7 @@ using UnityEngine;
 public class CameraPointer : MonoBehaviour
 {
     public Camera cam;
-
+    public float moveSpeed = 5f;
     public Vector2 boxSize = new Vector2(0.2f, 0.2f);
 
     private Rigidbody2D rb;
@@ -15,7 +15,6 @@ public class CameraPointer : MonoBehaviour
         if (cam == null)
             cam = Camera.main;
 
-        // Detach so physics moves it independently
         transform.parent = null;
 
         rb = GetComponent<Rigidbody2D>();
@@ -30,20 +29,25 @@ public class CameraPointer : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (cam == null) return;
+        Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        Vector2 delta = input * moveSpeed * Time.fixedDeltaTime;
 
-        // Camera center in world space
-        Vector3 cameraCenter = cam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0f));
-        Vector2 target = new Vector2(cameraCenter.x, cameraCenter.y);
-
-        // Clamp to wall bounds
+        Vector2 target = rb.position + delta;
         Vector2 clamped = ClampToBounds(target);
 
         rb.MovePosition(clamped);
+
+        // Keep camera centered on pointer
+        if (cam != null)
+        {
+            Vector3 camPos = transform.position;
+            camPos.z = cam.transform.position.z;
+            cam.transform.position = camPos;
+        }
     }
+
     Vector2 ClampToBounds(Vector2 target)
     {
-        // Define your clamp limits based on the grid + wall thickness
         float minX = GridOverlay.MinX + boxSize.x * 0.5f;
         float maxX = GridOverlay.MaxX - boxSize.x * 0.5f;
         float minY = GridOverlay.MinY + boxSize.y * 0.5f;
@@ -53,6 +57,7 @@ public class CameraPointer : MonoBehaviour
         float y = Mathf.Clamp(target.y, minY, maxY);
         return new Vector2(x, y);
     }
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         Debug.Log($"[Pointer] ENTERED wall: {collision.gameObject.name} at {collision.contacts[0].point}");

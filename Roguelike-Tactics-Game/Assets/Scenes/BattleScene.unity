@@ -975,8 +975,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47655aebee9fb984bae2f64ffdf7d17d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  gridInit: {fileID: 432911145}
+  pointer: {fileID: 1818080784}
 --- !u!114 &1197589508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1052,7 +1051,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1621556785
 Transform:
   m_ObjectHideFlags: 0
@@ -1271,6 +1270,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cam: {fileID: 1197589504}
+  moveSpeed: 8
   boxSize: {x: 0.2, y: 0.2}
 --- !u!50 &1818080786
 Rigidbody2D:

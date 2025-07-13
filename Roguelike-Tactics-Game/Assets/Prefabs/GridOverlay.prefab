@@ -48,7 +48,7 @@ MonoBehaviour:
   height: 10
   cellSize: 1
   originPosition: {x: 0, y: 0, z: 0}
-  lineWidth: 0.02
+  lineWidth: 0.08
   lineColor: {r: 1, g: 1, b: 1, a: 0.25}
   lineMaterial: {fileID: 2100000, guid: fd3097fd542aef34a9ffd2d51ee3f834, type: 2}
   cameraWallPrefab: {fileID: 2732678391476240166, guid: 069043e95d4519843ad950e80e6667f3, type: 3}

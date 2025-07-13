@@ -74,10 +74,10 @@ public class GridOverlay : MonoBehaviour
         Vector3 max = center + gridSize * 0.5f;
         float t = wallThickness;
 
-        MinX = min.x - t;
-        MaxX = max.x + t;
-        MinY = min.y - t;
-        MaxY = max.y + t;
+        MinX = min.x;
+        MaxX = max.x;
+        MinY = min.y;
+        MaxY = max.y;
 
         // Top wall
         CreateWall("Top",
