@@ -1,27 +1,50 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraMove : MonoBehaviour
 {
-    public float moveSpeed = 5f; // Speed of movement
+    public float moveSpeed = 5f;
 
-    void Update()
+    public GridInitializer gridInit;
+    private float minX, maxX, minY, maxY;
+    private float cameraHalfWidth, cameraHalfHeight;
+
+    private void Start()
     {
-        float horizontal = Input.GetAxis("Horizontal"); // A / D
-        float vertical = Input.GetAxis("Vertical");     // W / S
+        if (gridInit == null)
+            gridInit = FindFirstObjectByType<GridInitializer>();
 
-        Vector3 moveDirection = new Vector3(horizontal, vertical, 0f);
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        if (gridInit != null)
+        {
+            GridMap grid = gridInit.Grid;
+            float w = grid.width * grid.CellSize;
+            float h = grid.height * grid.CellSize;
+            Vector3 center = new Vector3(w * 0.5f, h * 0.5f, transform.position.z);
+            transform.position = center;
 
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            Debug.Log("Pressed W key");
+            Camera cam = Camera.main;
+            cameraHalfHeight = cam.orthographicSize;
+            cameraHalfWidth = cameraHalfHeight * cam.aspect;
+
+            // Pull limits from GridOverlay
+            minX = GridOverlay.MinX + cameraHalfWidth;
+            maxX = GridOverlay.MaxX - cameraHalfWidth;
+            minY = GridOverlay.MinY + cameraHalfHeight;
+            maxY = GridOverlay.MaxY - cameraHalfHeight;
         }
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            Debug.Log("Pressed Up Arrow key");
-        }
+    }
+
+    private void Update()
+    {
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+
+        Vector3 delta = new Vector3(h, v, 0f) * moveSpeed * Time.deltaTime;
+        Vector3 next = transform.position + delta;
+
+        // Clamp camera so center stays inside bounds
+        next.x = Mathf.Clamp(next.x, minX, maxX);
+        next.y = Mathf.Clamp(next.y, minY, maxY);
+
+        transform.position = next;
     }
 }

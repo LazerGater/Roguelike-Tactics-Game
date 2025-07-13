@@ -107,8 +107,13 @@ public class GridMap
         GetXY(worldPosition, out x, out y);
         return GetValue(x, y);
     }
+    public Bounds GetWorldBounds()
+    {
+        Vector3 size = new Vector3(width, height) * cellSize;
+        Vector3 center = originPosition + size * 0.5f;
+        return new Bounds(center, size);
+    }
 
-    // NEW: Occupancy handling
     public void MarkOccupied(Vector2Int pos)
     {
         if (IsInBounds(pos.x, pos.y)) occupiedPositions.Add(pos);
