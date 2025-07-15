@@ -1,9 +1,16 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class CameraPointer : MonoBehaviour
 {
+    [Header("References")]
     public Camera cam;
+
+    [Header("Input")]
+    public InputActionReference movementAction; // Assign in Inspector (Vector2)
+
+    [Header("Settings")]
     public float moveSpeed = 5f;
     public Vector2 boxSize = new Vector2(0.2f, 0.2f);
 
@@ -26,10 +33,25 @@ public class CameraPointer : MonoBehaviour
         box.size = boxSize;
         box.isTrigger = false;
     }
+    void OnEnable()
+    {
+        if (movementAction != null)
+            movementAction.action.Enable();
+    }
+
+    void OnDisable()
+    {
+        if (movementAction != null)
+            movementAction.action.Disable();
+    }
 
     void FixedUpdate()
     {
-        Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        Vector2 input = Vector2.zero;
+        if (movementAction != null)
+            input = movementAction.action.ReadValue<Vector2>();
+
+
         Vector2 delta = input * moveSpeed * Time.fixedDeltaTime;
 
         Vector2 target = rb.position + delta;
@@ -58,15 +80,6 @@ public class CameraPointer : MonoBehaviour
         return new Vector2(x, y);
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        Debug.Log($"[Pointer] ENTERED wall: {collision.gameObject.name} at {collision.contacts[0].point}");
-    }
-
-    void OnCollisionStay2D(Collision2D collision)
-    {
-        Debug.Log($"[Pointer] STAYING on wall: {collision.gameObject.name}");
-    }
 
     void OnDrawGizmos()
     {

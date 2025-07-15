@@ -2,20 +2,37 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CameraZoom2D : MonoBehaviour
 {
+    [Header("Input")]
+    public InputActionReference zoomAction; 
+
+    [Header("Settings")]
     public float zoomSpeed = 5f;
-    public float padding = 1f;      
+    public float padding = 1f;
 
-    float minZoom = 2f;               
-    float maxZoom = 10f;
+    private float minZoom = 2f;
+    private float maxZoom = 10f;
 
-    Camera cam;
+    private Camera cam;
 
     void Awake()
     {
         cam = GetComponent<Camera>();
+    }
+
+    void OnEnable()
+    {
+        if (zoomAction != null)
+            zoomAction.action.Enable();
+    }
+
+    void OnDisable()
+    {
+        if (zoomAction != null)
+            zoomAction.action.Disable();
     }
 
     // Called once by GridInitializer after it builds the map
@@ -37,8 +54,10 @@ public class CameraZoom2D : MonoBehaviour
 
     void Update()
     {
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (scroll == 0f) return;
+        if (zoomAction == null) return;
+
+        float scroll = zoomAction.action.ReadValue<float>(); // New Input System
+        if (Mathf.Abs(scroll) < 0.01f) return;
 
         float newSize = cam.orthographicSize - scroll * zoomSpeed;
         cam.orthographicSize = Mathf.Clamp(newSize, minZoom, maxZoom);

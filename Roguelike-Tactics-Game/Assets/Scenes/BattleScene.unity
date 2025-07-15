@@ -988,7 +988,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa7a241e2daff784bbfbaea5e599e351, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoomSpeed: 5
+  zoomAction: {fileID: 4872218230837717238, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  zoomSpeed: 1
   padding: 1
 --- !u!1 &1239122417
 GameObject:
@@ -1270,6 +1271,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cam: {fileID: 1197589504}
+  movementAction: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   moveSpeed: 8
   boxSize: {x: 0.2, y: 0.2}
 --- !u!50 &1818080786
