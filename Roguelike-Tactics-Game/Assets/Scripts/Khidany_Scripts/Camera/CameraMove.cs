@@ -1,27 +1,15 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraMove : MonoBehaviour
 {
-    public float moveSpeed = 5f; // Speed of movement
+    public Transform pointer;  // Assign this in inspector to the CameraPointer
 
-    void Update()
+    void LateUpdate()
     {
-        float horizontal = Input.GetAxis("Horizontal"); // A / D
-        float vertical = Input.GetAxis("Vertical");     // W / S
+        if (pointer == null) return;
 
-        Vector3 moveDirection = new Vector3(horizontal, vertical, 0f);
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
-
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            Debug.Log("Pressed W key");
-        }
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            Debug.Log("Pressed Up Arrow key");
-        }
+        Vector3 newPos = pointer.position;
+        newPos.z = transform.position.z; // Maintain original Z
+        transform.position = newPos;
     }
 }

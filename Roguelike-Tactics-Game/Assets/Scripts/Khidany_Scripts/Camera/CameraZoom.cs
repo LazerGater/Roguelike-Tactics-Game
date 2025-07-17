@@ -2,40 +2,64 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CameraZoom2D : MonoBehaviour
 {
+    [Header("Input")]
+    public InputActionReference zoomAction; 
+
+    [Header("Settings")]
     public float zoomSpeed = 5f;
-    public float minZoom = 3f;
-    public float maxZoom = 10f;
+    public float padding = 1f;
 
-    public float initialZoom = 5f;
+    private float minZoom = 2f;
+    private float maxZoom = 10f;
 
-    void Start()             
+    private Camera cam;
+
+    void Awake()
     {
-        Camera cam = Camera.main;
-        if (cam != null)
-        {
-            // Clamp in case the inspector values are outside the limits
-            cam.orthographicSize = Mathf.Clamp(initialZoom, minZoom, maxZoom);
-        }
+        cam = GetComponent<Camera>();
     }
 
+    void OnEnable()
+    {
+        if (zoomAction != null)
+            zoomAction.action.Enable();
+    }
+
+    void OnDisable()
+    {
+        if (zoomAction != null)
+            zoomAction.action.Disable();
+    }
+
+    // Called once by GridInitializer after it builds the map
+    public void ConfigureZoom(GridMap grid)
+    {
+        float boardW = grid.width * grid.CellSize;
+        float boardH = grid.height * grid.CellSize;
+
+        // Fit whole board inside view  choose larger of half height and half width/aspect
+        float halfH = boardH * 0.5f + padding;
+        float halfW = boardW * 0.5f / cam.aspect + padding;
+        maxZoom = Mathf.Max(halfH, halfW);
+
+        minZoom = Mathf.Max(grid.CellSize * 0.6f, 1f);
+
+        // Start centred and half zoomed
+        cam.orthographicSize = Mathf.Clamp(maxZoom * 0.5f, minZoom, maxZoom);
+    }
 
     void Update()
     {
-        // Zoom with mouse scroll
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (zoomAction == null) return;
 
-        // Zoom with Q/E keys
-        //if (Input.GetKey(KeyCode.Q)) scroll = 0.1f;
-        //if (Input.GetKey(KeyCode.E)) scroll = -0.1f;
+        float scroll = zoomAction.action.ReadValue<float>(); // New Input System
+        if (Mathf.Abs(scroll) < 0.01f) return;
 
-        if (scroll != 0f)
-        {
-            Camera cam = Camera.main;
-            float newSize = cam.orthographicSize - scroll * zoomSpeed;
-            cam.orthographicSize = Mathf.Clamp(newSize, minZoom, maxZoom);
-        }
+        float newSize = cam.orthographicSize - scroll * zoomSpeed;
+        cam.orthographicSize = Mathf.Clamp(newSize, minZoom, maxZoom);
     }
 }

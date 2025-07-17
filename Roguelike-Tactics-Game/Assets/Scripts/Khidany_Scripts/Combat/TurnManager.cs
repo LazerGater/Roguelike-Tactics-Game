@@ -13,6 +13,7 @@ public class TurnManager : MonoBehaviour
 
     private int turnNumber = 1;
     public int CurrentTurn => turnNumber;
+    public bool IsBattleActive { get; private set; }
 
     private List<PlayerUnit> playerUnits = new List<PlayerUnit>();
 
@@ -69,6 +70,7 @@ public class TurnManager : MonoBehaviour
     }
     public void StartBattle()
     {
+        IsBattleActive = true;
         turnNumber = 0;
         AdvanceTurn();
     }

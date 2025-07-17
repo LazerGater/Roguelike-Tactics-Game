@@ -6,12 +6,10 @@ public class BattlePrepUIManager : MonoBehaviour
     [SerializeField] private GameObject unitListPanel;
     [SerializeField] private GameObject PrepUI;
     [SerializeField] private GameObject GameUI;
-    [SerializeField] private GameObject mapViewPanel; 
     [SerializeField] private GameObject settingsPanel;
 
     [Header("Buttons")]
     [SerializeField] private Button unitListButton;
-    [SerializeField] private Button mapViewButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button battleButton;
     [SerializeField] private Button forfeitButton;
@@ -21,11 +19,6 @@ public class BattlePrepUIManager : MonoBehaviour
 
 
     public static BattlePrepUIManager Instance { get; private set; }
-    public bool IsBlockingMapInput()
-    {
-        // Only blocks input when MapView is open (or later if other blockers exist)
-        return mapViewPanel.activeSelf;
-    }
     public static bool IsBattleActive { get; private set; } = false;
 
 
@@ -41,7 +34,6 @@ public class BattlePrepUIManager : MonoBehaviour
     private void Start()
     {
         unitListButton.onClick.AddListener(OpenUnitList);
-        mapViewButton.onClick.AddListener(OpenMapView);
         settingsButton.onClick.AddListener(OpenSettings);
         battleButton.onClick.AddListener(OnBattleStart);
         forfeitButton.onClick.AddListener(OnForfeit);
@@ -50,21 +42,12 @@ public class BattlePrepUIManager : MonoBehaviour
     public void OpenUnitList()
     {
         unitListPanel.SetActive(true);
-        mapViewPanel.SetActive(false);
-        settingsPanel.SetActive(false);
-    }
-
-    public void OpenMapView()
-    {
-        unitListPanel.SetActive(false);
-        mapViewPanel.SetActive(true);
         settingsPanel.SetActive(false);
     }
 
     public void OpenSettings()
     {
         unitListPanel.SetActive(false);
-        mapViewPanel.SetActive(false);
         settingsPanel.SetActive(true);
     }
 
@@ -82,11 +65,10 @@ public class BattlePrepUIManager : MonoBehaviour
     }
     private void HandleBack()
     {
-        if (unitListPanel.activeSelf || mapViewPanel.activeSelf || settingsPanel.activeSelf)
+        if (unitListPanel.activeSelf || settingsPanel.activeSelf)
         {
             // Close sub-panels and return to main prep menu
             unitListPanel.SetActive(false);
-            mapViewPanel.SetActive(false);
             settingsPanel.SetActive(false);
         }
         else
