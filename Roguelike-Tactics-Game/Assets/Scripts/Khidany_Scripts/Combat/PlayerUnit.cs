@@ -211,4 +211,14 @@ public class PlayerUnit : MonoBehaviour
        9. Public helpers
        ----------------------------------------- */
     public Vector2Int GetGridPosition() => gridPos;
+
+    public bool HasMoveHighlight(Vector2Int tile)
+    {
+        return moveHighlights.Exists(obj =>
+        {
+            var s = obj.name.Split('_');
+            return int.Parse(s[1]) == tile.x && int.Parse(s[2]) == tile.y;
+        });
+    }
+
 }
