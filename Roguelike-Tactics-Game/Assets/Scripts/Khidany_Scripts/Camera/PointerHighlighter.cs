@@ -56,6 +56,25 @@ public class PointerHighlighter : MonoBehaviour
         if (!currentHighlight.activeSelf)
             currentHighlight.SetActive(true);
     }
+    public void UpdateHighlight(Vector3 worldPos)
+    {
+        if (grid == null || currentHighlight == null) return;
+
+        grid.GetXY(worldPos, out int x, out int y);
+        if (!grid.IsInBounds(x, y))
+        {
+            currentHighlight.SetActive(false);
+            return;
+        }
+
+        Vector3 cellCenter = grid.GetWorldPosition(x, y) + Vector3.one * (grid.CellSize / 2f);
+        currentHighlight.transform.position = cellCenter;
+
+        if (!currentHighlight.activeSelf)
+            currentHighlight.SetActive(true);
+    }
+
+
 
     public void HideHighlight()
     {

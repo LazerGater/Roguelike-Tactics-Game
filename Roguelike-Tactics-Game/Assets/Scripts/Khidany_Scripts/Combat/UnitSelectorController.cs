@@ -5,19 +5,21 @@ using UnityEngine.InputSystem;
 public class UnitSelectorController : MonoBehaviour
 {
     [Header("References")]
-    public CameraPointer pointer;                       // Pointer object for controller
-    public PathPreviewController pathPreview;          // Handles path arrow previews
-    public PointerHighlighter pointerHighlighter;      // Handles grid hover highlight
-    public GridInitializer gridInitializer;            // Provides GridMap reference
-    public InputActionAsset inputActions;              // Default Input Action asset
+    public CameraPointer pointer;                       // Controller pointer
+    public PathPreviewController pathPreview;          // Path preview arrows
+    public PointerHighlighter pointerHighlighter;      // Grid highlight visual
+    public GridInitializer gridInitializer;            // For GridMap
+    public InputActionAsset inputActions;              // Input System actions
 
     private GridMap grid;
     private PlayerUnit selectedUnit = null;
     private Vector2Int lastHoverTile = new Vector2Int(-999, -999);
 
-    // Selection state
     private enum State { Idle, UnitSelected }
     private State currentState = State.Idle;
+
+    private enum InputMode { Mouse, Controller }
+    private InputMode currentInputMode = InputMode.Mouse;
 
     // Input Actions
     private InputAction confirmAction;
@@ -27,7 +29,7 @@ public class UnitSelectorController : MonoBehaviour
 
     void Start()
     {
-        // Get GridMap reference from GridInitializer
+        // Get grid reference
         if (gridInitializer == null)
             gridInitializer = FindFirstObjectByType<GridInitializer>();
         if (gridInitializer != null)
@@ -55,7 +57,6 @@ public class UnitSelectorController : MonoBehaviour
 
     void OnDestroy()
     {
-        // Remove input listeners
         if (confirmAction != null) confirmAction.performed -= OnConfirm;
         if (cancelAction != null) cancelAction.performed -= OnCancel;
         if (nextUnitAction != null) nextUnitAction.performed -= OnNextUnit;
@@ -64,21 +65,41 @@ public class UnitSelectorController : MonoBehaviour
 
     void Update()
     {
-        if (grid == null || pointer == null) return;
+        if (grid == null) return;
 
-        // Controller hover (pointer position)
-        UpdateHoverTile(pointer.transform.position);
-
-        // Mouse hover override (if mouse is moved)
+        // Detect input mode
         if (Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero)
+            currentInputMode = InputMode.Mouse;
+        else if (Gamepad.current != null && Gamepad.current.leftStick.ReadValue() != Vector2.zero)
+            currentInputMode = InputMode.Controller;
+
+        // Determine hover world position based on mode
+        Vector3 worldPos;
+        if (currentInputMode == InputMode.Mouse)
         {
-            Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            mouseWorld.z = 0;
-            UpdateHoverTile(mouseWorld);
+            worldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            worldPos.z = 0;
+        }
+        else
+        {
+            worldPos = pointer.transform.position;
+        }
+
+        // Update hover and highlights
+        UpdateHoverTile(worldPos);
+        if (pointerHighlighter != null)
+            pointerHighlighter.UpdateHighlight(worldPos);
+
+        // Keyboard fallback for Cancel (Escape) and Confirm (Left Click)
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+                HandleCancel();
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+                HandleConfirm(worldPos);
         }
     }
 
-    // Handles updating the hover tile and path preview
     private void UpdateHoverTile(Vector3 worldPos)
     {
         grid.GetXY(worldPos, out int hx, out int hy);
@@ -88,10 +109,12 @@ public class UnitSelectorController : MonoBehaviour
         {
             lastHoverTile = hoverTile;
 
-            // Only update path preview when a unit is selected
             if (currentState == State.UnitSelected)
             {
-                pathPreview.UpdatePathPreview(hoverTile);
+                if (IsTileHighlighted(hoverTile))
+                    pathPreview.UpdatePathPreview(hoverTile);
+                else
+                    pathPreview.ClearPath();
             }
         }
     }
@@ -101,29 +124,35 @@ public class UnitSelectorController : MonoBehaviour
         return selectedUnit != null && selectedUnit.HasMoveHighlight(tile);
     }
 
-    // Confirm button logic (controller or keyboard)
+    // Input System confirm
     private void OnConfirm(InputAction.CallbackContext ctx)
     {
+        Vector3 worldPos = GetActiveWorldPosition();
+        HandleConfirm(worldPos);
+    }
+
+    // Input System cancel
+    private void OnCancel(InputAction.CallbackContext ctx)
+    {
+        HandleCancel();
+    }
+
+    private void HandleConfirm(Vector3 worldPos)
+    {
+        grid.GetXY(worldPos, out int tx, out int ty);
+        Vector2Int targetTile = new Vector2Int(tx, ty);
+
         if (currentState == State.Idle)
         {
-            // Try selecting a unit
-            grid.GetXY(pointer.transform.position, out int px, out int py);
-            PlayerUnit unit = FindUnitAtTile(new Vector2Int(px, py));
+            PlayerUnit unit = FindUnitAtTile(targetTile);
             if (unit != null && !unit.HasActed)
             {
                 SelectUnit(unit);
-                unit.Select(); // Show its move range
+                unit.Select();
             }
         }
         else if (currentState == State.UnitSelected)
         {
-            // Attempt to move the selected unit
-            grid.GetXY(pointer.transform.position, out int tx, out int ty);
-            Vector2Int targetTile = new Vector2Int(tx, ty);
-
-            Debug.Log($"Target tile: {targetTile}, Occupied: {grid.IsOccupied(targetTile)}");
-
-            // Validate highlighted tile
             if (IsTileHighlighted(targetTile))
             {
                 var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), targetTile, selectedUnit.maxMovePoints);
@@ -135,33 +164,22 @@ public class UnitSelectorController : MonoBehaviour
                     return;
                 }
             }
-
             Debug.Log("[UnitSelector] Cannot move to that tile.");
         }
     }
 
-    // Cancel button logic
-    private void OnCancel(InputAction.CallbackContext ctx)
+    private void HandleCancel()
     {
         if (currentState == State.UnitSelected)
         {
-            Debug.Log("[UnitSelector] Cancel move!");
             pathPreview.ClearPath();
             DeselectUnit();
         }
     }
 
-    // Cycle to next available unit
-    private void OnNextUnit(InputAction.CallbackContext ctx)
-    {
-        JumpToUnit(1);
-    }
-
-    // Cycle to previous available unit
-    private void OnPrevUnit(InputAction.CallbackContext ctx)
-    {
-        JumpToUnit(-1);
-    }
+    // Cycle units
+    private void OnNextUnit(InputAction.CallbackContext ctx) => JumpToUnit(1);
+    private void OnPrevUnit(InputAction.CallbackContext ctx) => JumpToUnit(-1);
 
     private void JumpToUnit(int direction)
     {
@@ -169,10 +187,7 @@ public class UnitSelectorController : MonoBehaviour
         List<PlayerUnit> availableUnits = new List<PlayerUnit>();
 
         foreach (var u in units)
-        {
-            if (!u.HasActed)
-                availableUnits.Add(u);
-        }
+            if (!u.HasActed) availableUnits.Add(u);
 
         if (availableUnits.Count == 0)
         {
@@ -180,38 +195,26 @@ public class UnitSelectorController : MonoBehaviour
             return;
         }
 
-        // Sort units for consistent order
         availableUnits.Sort((a, b) =>
             (a.GetGridPosition().x + a.GetGridPosition().y).CompareTo(
             (b.GetGridPosition().x + b.GetGridPosition().y)));
 
-        // Find current pointer position
-        grid.GetXY(pointer.transform.position, out int px, out int py);
+        int px, py;
+        grid.GetXY(pointer.transform.position, out px, out py);
         Vector2Int pointerTile = new Vector2Int(px, py);
 
         int currentIndex = -1;
         for (int i = 0; i < availableUnits.Count; i++)
-        {
-            if (availableUnits[i].GetGridPosition() == pointerTile)
-            {
-                currentIndex = i;
-                break;
-            }
-        }
+            if (availableUnits[i].GetGridPosition() == pointerTile) currentIndex = i;
 
-        // Compute next index
         int nextIndex = (currentIndex + direction + availableUnits.Count) % availableUnits.Count;
 
-        // Move pointer to next unit
         Vector3 worldPos = grid.GetWorldPosition(
             availableUnits[nextIndex].GetGridPosition().x,
             availableUnits[nextIndex].GetGridPosition().y
         ) + Vector3.one * (grid.CellSize / 2f);
 
         pointer.transform.position = worldPos;
-        Debug.Log($"[UnitSelector] Jumped to unit at {availableUnits[nextIndex].GetGridPosition()}");
-
-        // Deselect any current selection
         if (currentState == State.UnitSelected)
             DeselectUnit();
     }
@@ -221,14 +224,12 @@ public class UnitSelectorController : MonoBehaviour
         selectedUnit = unit;
         currentState = State.UnitSelected;
         pathPreview.SetSelectedUnit(unit);
-        Debug.Log($"[UnitSelector] Selected unit at {unit.GetGridPosition()}");
     }
 
     private void DeselectUnit()
     {
         if (selectedUnit != null)
-            selectedUnit.Deselect(); // Clear move highlights on the unit
-
+            selectedUnit.Deselect();
         selectedUnit = null;
         currentState = State.Idle;
         lastHoverTile = new Vector2Int(-999, -999);
@@ -239,10 +240,21 @@ public class UnitSelectorController : MonoBehaviour
     {
         PlayerUnit[] units = FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None);
         foreach (var u in units)
-        {
-            if (u.GetGridPosition() == tile)
-                return u;
-        }
+            if (u.GetGridPosition() == tile) return u;
         return null;
+    }
+
+    private Vector3 GetActiveWorldPosition()
+    {
+        if (currentInputMode == InputMode.Mouse)
+        {
+            Vector3 pos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            pos.z = 0;
+            return pos;
+        }
+        else
+        {
+            return pointer.transform.position;
+        }
     }
 }
