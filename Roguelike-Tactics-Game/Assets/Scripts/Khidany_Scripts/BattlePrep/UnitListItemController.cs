@@ -1,40 +1,31 @@
-using System;                    // <-- new
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UnitListItemController : MonoBehaviour
 {
-    public Image portraitImage;
     public TextMeshProUGUI nameText;
+    public TextMeshProUGUI classText;
     public Button upButton;
     public Button downButton;
 
-    private PlayerData data;
-    private Action<PlayerData> onUp;
-    private Action<PlayerData> onDown;
+    private PartyMember memberRef;
+    private System.Action<PartyMember> moveUp;
+    private System.Action<PartyMember> moveDown;
+    private System.Action<PartyMember> toggleSelect;
 
-    public void Setup(
-        PlayerData unitData,
-        Action<PlayerData> moveUpCallback,
-        Action<PlayerData> moveDownCallback
-    )
+    public void Setup(PartyMember member, System.Action<PartyMember> onUp, System.Action<PartyMember> onDown, System.Action<PartyMember> onToggleSelect)
     {
-        data = unitData;
-        onUp = moveUpCallback;
-        onDown = moveDownCallback;
+        memberRef = member;
+        moveUp = onUp;
+        moveDown = onDown;
+        toggleSelect = onToggleSelect;
 
-        portraitImage.sprite = data.portrait;
-        nameText.text = data.unitName;
+        nameText.text = member.character.characterName;
+        classText.text = member.unitClass.className;
 
-        upButton.onClick.RemoveAllListeners();
-        upButton.onClick.AddListener(() => onUp(data));
 
-        downButton.onClick.RemoveAllListeners();
-        downButton.onClick.AddListener(() => onDown(data));
-
-        // disable at ends
-        upButton.interactable = data.priorityID > 0;
-        downButton.interactable = true; // optional: disable if at bottom
+        upButton.onClick.AddListener(() => moveUp(memberRef));
+        downButton.onClick.AddListener(() => moveDown(memberRef));
     }
 }

@@ -1,18 +1,15 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
 
 public class OverworldPrepManager : MonoBehaviour
 {
     [Header("UI References")]
     public Transform unitListPanel;
     public GameObject unitUIPrefab;
-    public UnityEngine.UI.Button loadButton;
-    public UnityEngine.UI.Button backButton;
+    public Button loadButton;
+    public Button backButton;
 
     private void Start()
     {
@@ -23,47 +20,50 @@ public class OverworldPrepManager : MonoBehaviour
 
     private void PopulateUnitList()
     {
-        // Sort by priorityID ascending
         var list = PartyCarrier.Instance.playerParty;
         list.Sort((a, b) => a.priorityID.CompareTo(b.priorityID));
 
-        // Clear old items
         foreach (Transform child in unitListPanel)
             Destroy(child.gameObject);
 
-        // Rebuild
-        foreach (var data in list)
+        foreach (var member in list)
         {
             var go = Instantiate(unitUIPrefab, unitListPanel);
             var item = go.GetComponent<UnitListItemController>();
-            item.Setup(data, OnMoveUp, OnMoveDown);
+            item.Setup(member, OnMoveUp, OnMoveDown, OnToggleSelect);
         }
     }
 
-    private void OnMoveUp(PlayerData data)
+    private void OnMoveUp(PartyMember member)
     {
         var list = PartyCarrier.Instance.playerParty;
-        int idx = list.IndexOf(data);
+        int idx = list.IndexOf(member);
         if (idx > 0)
         {
             int tmp = list[idx - 1].priorityID;
-            list[idx - 1].priorityID = data.priorityID;
-            data.priorityID = tmp;
+            list[idx - 1].priorityID = member.priorityID;
+            member.priorityID = tmp;
             PopulateUnitList();
         }
     }
 
-    private void OnMoveDown(PlayerData data)
+    private void OnMoveDown(PartyMember member)
     {
         var list = PartyCarrier.Instance.playerParty;
-        int idx = list.IndexOf(data);
+        int idx = list.IndexOf(member);
         if (idx < list.Count - 1)
         {
             int tmp = list[idx + 1].priorityID;
-            list[idx + 1].priorityID = data.priorityID;
-            data.priorityID = tmp;
+            list[idx + 1].priorityID = member.priorityID;
+            member.priorityID = tmp;
             PopulateUnitList();
         }
+    }
+
+    private void OnToggleSelect(PartyMember member)
+    {
+        member.isSelectedForBattle = !member.isSelectedForBattle;
+        PopulateUnitList();
     }
 
     private void LoadBattleScene()
@@ -73,6 +73,6 @@ public class OverworldPrepManager : MonoBehaviour
 
     private void HandleBack()
     {
-        // implement as needed (cancel prep)
+        // implement as needed
     }
 }

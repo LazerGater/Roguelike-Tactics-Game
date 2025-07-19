@@ -1988,31 +1988,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerParty:
-  - unitID: u001
-    unitName: Ellum
-    portrait: {fileID: 0}
-    maxHP: 20
-    currentHP: 20
-    atk: 5
-    def: 5
-    speed: 5
-    luck: 5
-    dex: 5
-    maxMovePoints: 4
-    isSelectedForBattle: 0
+  - character: {fileID: 11400000, guid: 38137368d4b31f24bb8f8ce3f8a51ee7, type: 2}
+    unitClass: {fileID: 11400000, guid: 8744eb326a6fd8a4896a1e7e12ce5bac, type: 2}
+    isSelectedForBattle: 1
     priorityID: 1
-  - unitID: u002
-    unitName: Aphred
-    portrait: {fileID: 0}
-    maxHP: 40
-    currentHP: 40
-    atk: 7
-    def: 5
-    speed: 2
-    luck: 7
-    dex: 5
-    maxMovePoints: 6
-    isSelectedForBattle: 0
+  - character: {fileID: 11400000, guid: 5059c6f48e04b7147ba7178e07348e39, type: 2}
+    unitClass: {fileID: 11400000, guid: 78bce36fb0dc858439eb651476121f5c, type: 2}
+    isSelectedForBattle: 1
     priorityID: 2
 --- !u!4 &1453351205
 Transform:

@@ -5,11 +5,11 @@ public class PartyCarrier : MonoBehaviour
 {
     public static PartyCarrier Instance { get; private set; }
 
-    public List<PlayerData> playerParty = new List<PlayerData>();
+    public List<PartyMember> playerParty = new List<PartyMember>();
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;

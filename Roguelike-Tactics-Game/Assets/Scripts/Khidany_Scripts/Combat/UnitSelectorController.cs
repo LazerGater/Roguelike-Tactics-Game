@@ -155,7 +155,7 @@ public class UnitSelectorController : MonoBehaviour
         {
             if (IsTileHighlighted(targetTile))
             {
-                var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), targetTile, selectedUnit.maxMovePoints);
+                var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), targetTile, selectedUnit.Movement);
                 if (path != null)
                 {
                     selectedUnit.GetComponent<UnitMover>().MoveAlong(path);

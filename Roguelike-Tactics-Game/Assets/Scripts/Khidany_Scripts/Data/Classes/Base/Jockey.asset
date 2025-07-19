@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecfb81d10f36c94586b3a18665f27de, type: 3}
+  m_Name: Jockey
+  m_EditorClassIdentifier: 
+  className: Jockey
+  moveRange: 6
+  weaponType: Lance
+  hpMod: 10
+  atkMod: 0
+  defMod: 5
+  speedMod: 5
+  luckMod: 0
+  dexMod: 0
