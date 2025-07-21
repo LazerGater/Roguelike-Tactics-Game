@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(UnitMover))]
-public class PlayerUnit : MonoBehaviour
+public class PlayerUnit : MonoBehaviour, IBattleUnit
 {
     [Header("Data References")]
     public CharacterData characterData;

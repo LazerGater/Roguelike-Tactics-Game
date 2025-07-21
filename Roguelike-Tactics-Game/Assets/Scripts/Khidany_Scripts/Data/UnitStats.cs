@@ -10,6 +10,7 @@ public class UnitStats
     public int dex;
     public int moveRange;
 
+    // Constructor for players (based on CharacterData + ClassData)
     public UnitStats(CharacterData c, ClassData cl)
     {
         maxHP = c.baseHP + cl.hpMod;
@@ -19,8 +20,21 @@ public class UnitStats
         luck = c.baseLuck + cl.luckMod;
         dex = c.baseDex + cl.dexMod;
 
-
         currentHP = maxHP;
         moveRange = cl.moveRange;
     }
+
+    // Constructor for enemies (fully custom stats)
+    public UnitStats(int hp, int atk, int def, int speed, int luck, int dex, int moveRange)
+    {
+        this.maxHP = hp;
+        this.currentHP = hp;
+        this.atk = atk;
+        this.def = def;
+        this.speed = speed;
+        this.luck = luck;
+        this.dex = dex;
+        this.moveRange = moveRange;
+    }
+    public UnitStats() { }
 }

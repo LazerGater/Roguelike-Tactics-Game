@@ -14,4 +14,12 @@ public class ClassData : ScriptableObject
     public int speedMod = 0;
     public int luckMod = 0;
     public int dexMod = 0;
+
+    [Header("Enemy Flat Stat Bonuses")]
+    public int hpBonus = 0;
+    public int atkBonus = 0;
+    public int defBonus = 0;
+    public int speedBonus = 0;
+    public int luckBonus = 0;
+    public int dexBonus = 0;
 }

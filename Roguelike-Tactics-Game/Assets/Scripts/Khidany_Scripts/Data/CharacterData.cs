@@ -6,9 +6,9 @@ public class CharacterData : ScriptableObject
     [Header("Basic Info")]
     public string characterName;
     public Sprite portrait;
-    public int level;
 
     [Header("Base Stats")]
+    public int baseLevel = 1;
     public int baseHP = 20;
     public int baseAtk = 5;
     public int baseDef = 2;

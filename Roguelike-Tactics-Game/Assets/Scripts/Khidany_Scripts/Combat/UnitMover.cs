@@ -2,57 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerUnit))]            // Change to base Unit script later
 public class UnitMover : MonoBehaviour
 {
-    // How long to hop from one tile center to the next.
-    public float stepDuration = 0.15f;
-
-    private PlayerUnit unit;
     private GridMap grid;
+    private IBattleUnit unit;
 
-    private void Awake()
+    public void Init(GridMap gridMap)
     {
-        unit = GetComponent<PlayerUnit>();
+        grid = gridMap;
+        unit = GetComponent<IBattleUnit>();
+        if (unit == null)
+        {
+            Debug.LogError("UnitMover requires a component that implements IBattleUnit!");
+        }
     }
-
-    public void Init(GridMap g) => grid = g;
 
     public void MoveAlong(List<Vector2Int> path)
     {
-        if (path == null || path.Count < 2) return; // already on target
-        StartCoroutine(MoveCo(path));
+        if (unit == null || grid == null || path == null || path.Count == 0)
+            return;
+
+        StartCoroutine(MoveRoutine(path));
     }
 
-    private IEnumerator MoveCo(List<Vector2Int> path)
+    private IEnumerator MoveRoutine(List<Vector2Int> path)
     {
-        unit.MarkActed();       
-        GridManager.Instance.ClearSelectedUnit();
-
-        // free start tile
-        grid.MarkUnoccupied(unit.GetGridPosition());
-
-        for (int i = 1; i < path.Count; i++)
+        foreach (var pos in path)
         {
-            Vector3 from = grid.GetWorldPosition(
-                path[i - 1].x, path[i - 1].y) + Vector3.one * (grid.CellSize / 2f);
-            Vector3 to = grid.GetWorldPosition(
-                path[i].x, path[i].y) + Vector3.one * (grid.CellSize / 2f);
+            Vector3 targetWorld = grid.GetWorldPosition(pos.x, pos.y) + Vector3.one * (grid.CellSize / 2f);
 
-            float t = 0f;
-            while (t < stepDuration)
+            while (Vector3.Distance(transform.position, targetWorld) > 0.05f)
             {
-                transform.position = Vector3.Lerp(from, to, t / stepDuration);
-                t += Time.deltaTime;
+                transform.position = Vector3.MoveTowards(transform.position, targetWorld, 5f * Time.deltaTime);
                 yield return null;
             }
-            transform.position = to;
+
+            unit.SetGridPos(pos);
+            yield return new WaitForSeconds(0.05f);
         }
-
-        // occupy final tile
-        unit.SetGridPos(path[^1]);   // add this setter to PlayerUnit
-        grid.MarkOccupied(unit.GetGridPosition());
-
-        TurnManager.Instance.NotifyUnitActed();
     }
 }

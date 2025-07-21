@@ -21,3 +21,9 @@ MonoBehaviour:
   speedMod: 0
   luckMod: 0
   dexMod: 0
+  hpBonus: 4
+  atkBonus: 0
+  defBonus: 6
+  speedBonus: -1
+  luckBonus: 0
+  dexBonus: 0
