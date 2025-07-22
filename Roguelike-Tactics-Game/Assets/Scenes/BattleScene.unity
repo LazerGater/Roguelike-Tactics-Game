@@ -1050,6 +1050,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1239122418}
   - component: {fileID: 1239122420}
+  - component: {fileID: 1239122421}
   m_Layer: 0
   m_Name: BattleManager
   m_TagString: Untagged
@@ -1084,7 +1085,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a709d7f739578d409b4b83a0970cfd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManagerObject: {fileID: 748289429}
+  gridInitializer: {fileID: 432911145}
+  gridManager: {fileID: 748289431}
+  enemySpawner: {fileID: 1239122421}
+--- !u!114 &1239122421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239122417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3e60e929026aa48ab3c8bcba008937, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyPrefab: {fileID: 6790391498679519465, guid: dff55faefcae6e94d9bfa359afba5d23, type: 3}
+  genericEnemyTemplate: {fileID: 11400000, guid: 32fbfa4c64bd6d641b54601152d4d53c, type: 2}
+  enemyClassPool:
+  - {fileID: 11400000, guid: 3405ecba14e168e40b7375e08b191f09, type: 2}
+  - {fileID: 11400000, guid: 8744eb326a6fd8a4896a1e7e12ce5bac, type: 2}
+  - {fileID: 11400000, guid: 47f8ea89747184941851189dc6360190, type: 2}
+  - {fileID: 11400000, guid: 78bce36fb0dc858439eb651476121f5c, type: 2}
+  - {fileID: 11400000, guid: 3a0078fbe045bca4babb0cb49cfad127, type: 2}
+  spawnCommander: 1
+  commanderPrefab: {fileID: 6790391498679519465, guid: 4479604df25ed75419f3824889703504, type: 3}
+  commanderCharacter: {fileID: 11400000, guid: 53dd125ddf4f32b42a9165f7463d694d, type: 2}
+  commanderLevelOffset: 4
 --- !u!1 &1257120499
 GameObject:
   m_ObjectHideFlags: 0

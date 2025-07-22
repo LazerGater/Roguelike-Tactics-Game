@@ -4,48 +4,32 @@ using UnityEngine;
 public class BattlePrepManager : MonoBehaviour
 {
     [Header("References")]
-    public GameObject gridManagerObject; // your GridManager in the scene
+    [SerializeField] private GridInitializer gridInitializer; // Assign in Inspector
+    [SerializeField] private GridManager gridManager; // Assign in Inspector
+    [SerializeField] private EnemySpawner enemySpawner;
 
     private List<Vector2Int> startingTiles;
     private int partyLimit;
 
     private void Start()
     {
-        // 1) Pull map data
-        var initializer = FindFirstObjectByType<GridInitializer>();
-        startingTiles = new List<Vector2Int>(initializer.AllySpawns);
-        partyLimit = initializer.PartyLimit;
+        if (gridInitializer == null || gridManager == null || enemySpawner == null)
+        {
+            Debug.LogError("BattlePrepManager: Missing required references!");
+            return;
+        }
 
-        // 2) Spawn party into battle
-        SpawnParty();
+        // 1) Pull map data from GridInitializer
+        startingTiles = new List<Vector2Int>(gridInitializer.AllySpawns);
+        partyLimit = gridInitializer.PartyLimit;
 
+        // 2) Spawn player units
+        gridManager.SpawnSelectedParty(startingTiles, false);
 
+        // 3) Spawn enemies
+        enemySpawner.SpawnEnemyParty(gridInitializer);
 
         // 4) Begin turn loop
         TurnManager.Instance.StartBattle();
     }
-
-    private void SpawnParty()
-    {
-        var gm = gridManagerObject.GetComponent<GridManager>();
-        gm.SpawnSelectedParty(startingTiles, false);
-    }
-
-    //public void RefreshGridPreview()
-         //{
-         //    var gm = gridManagerObject.GetComponent<GridManager>();
-         //    gm.SpawnSelectedParty(startingTiles, true);
-         //}
-
-    //private void HighlightStartTiles(bool on)
-    //{
-    //    var gm = gridManagerObject.GetComponent<GridManager>();
-    //    foreach (var pos in startingTiles)
-    //    {
-    //        if (on) gm.HighlightTile(pos);
-    //        else gm.ClearTileHighlight(pos);
-    //    }
-    //}
-
-
-}    
+}

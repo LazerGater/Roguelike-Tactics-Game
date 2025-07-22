@@ -16,6 +16,10 @@ public class TurnManager : MonoBehaviour
     public bool IsBattleActive { get; private set; }
 
     private List<PlayerUnit> playerUnits = new List<PlayerUnit>();
+    private List<EnemyUnit> enemyUnits = new List<EnemyUnit>();
+
+
+
 
     public TurnPhase CurrentPhase { get; private set; } = TurnPhase.Player;
 
@@ -29,7 +33,10 @@ public class TurnManager : MonoBehaviour
     {
         playerUnits.Add(unit);
     }
-
+    public void RegisterEnemyUnit(EnemyUnit unit)
+    {
+        enemyUnits.Add(unit);
+    }
     public void NotifyUnitActed()
     {
         if (CurrentPhase != TurnPhase.Player) return;
