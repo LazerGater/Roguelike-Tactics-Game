@@ -48,13 +48,18 @@ public class PlayerUnit : MonoBehaviour, IBattleUnit
     public void SetGridPos(Vector2Int p) => gridPos = p;
     public Vector2Int GetGridPosition() => gridPos;
 
-    public void MarkActed() => HasActed = true;
+    public void MarkActed()
+    {
+        HasActed = true;
+        Debug.Log($"{name} has acted and can no longer move this turn.");
+    }
+
     public void ResetTurn() => HasActed = false;
 
     private void Update()
     {
         if (TurnManager.Instance == null || !TurnManager.Instance.IsBattleActive) return;
-        if (HasActed) return;
+        if (HasActed) return;  // Prevent multiple moves
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -72,7 +77,17 @@ public class PlayerUnit : MonoBehaviour, IBattleUnit
             {
                 var path = PlayerPathfinder.FindPath(grid, gridPos, clicked, Stats.moveRange);
                 if (path != null)
-                    GetComponent<UnitMover>().MoveAlong(path);
+                {
+                    Debug.Log("About to start MoveAlong with callback.");
+
+                    GetComponent<UnitMover>().MoveAlong(path, () =>
+                    {
+                        Debug.Log("Movement finished, marking acted.");
+                        MarkActed();
+                        TurnManager.Instance.NotifyUnitActed();
+                        Deselect();
+                    });
+                }
             }
         }
     }
@@ -131,7 +146,6 @@ public class PlayerUnit : MonoBehaviour, IBattleUnit
             var h = Instantiate(moveHighlightPrefab, wp, Quaternion.identity);
             h.name = $"Highlight_{kvp.Key.x}_{kvp.Key.y}";
             moveHighlights.Add(h);
-
         }
     }
 
@@ -149,15 +163,13 @@ public class PlayerUnit : MonoBehaviour, IBattleUnit
             return int.Parse(s[1]) == pos.x && int.Parse(s[2]) == pos.y;
         });
     }
+
     public int Movement => Stats != null ? Stats.moveRange : 0;
 
     public bool HasMoveHighlight(Vector2Int tile)
     {
         return moveHighlights.Exists(obj =>
         {
-            // NOTE: MoveHighlight objects currently don't have their grid pos in name
-            // Add this naming in ShowMoveRange() below if missing:
-            // h.name = $"Highlight_{kvp.Key.x}_{kvp.Key.y}";
             var s = obj.name.Split('_');
             return s.Length >= 3 && int.Parse(s[1]) == tile.x && int.Parse(s[2]) == tile.y;
         });
