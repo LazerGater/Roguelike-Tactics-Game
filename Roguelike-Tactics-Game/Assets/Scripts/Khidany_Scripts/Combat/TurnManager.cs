@@ -16,6 +16,7 @@ public class TurnManager : MonoBehaviour
     public bool IsBattleActive { get; private set; }
 
     private List<PlayerUnit> playerUnits = new List<PlayerUnit>();
+    private List<EnemyUnit> enemyUnits = new List<EnemyUnit>();
 
     public TurnPhase CurrentPhase { get; private set; } = TurnPhase.Player;
 
@@ -28,6 +29,15 @@ public class TurnManager : MonoBehaviour
     public void RegisterPlayerUnit(PlayerUnit unit)
     {
         playerUnits.Add(unit);
+        Debug.Log($"PlayerUnit registered: {unit.name}. Total: {playerUnits.Count}");
+        PrintCurrentUnits();
+    }
+
+    public void RegisterEnemyUnit(EnemyUnit unit)
+    {
+        enemyUnits.Add(unit);
+        Debug.Log($"EnemyUnit registered: {unit.name}. Total: {enemyUnits.Count}");
+        PrintCurrentUnits();
     }
 
     public void NotifyUnitActed()
@@ -40,7 +50,7 @@ public class TurnManager : MonoBehaviour
                 return;
         }
 
-        // All player units have acted -> go to Enemy phase
+        Debug.Log("All player units have acted.");
         StartCoroutine(HandleEnemyPhase());
     }
 
@@ -68,10 +78,19 @@ public class TurnManager : MonoBehaviour
             unit.ResetTurn();
         }
     }
+
     public void StartBattle()
     {
         IsBattleActive = true;
         turnNumber = 0;
         AdvanceTurn();
+    }
+
+    private void PrintCurrentUnits()
+    {
+        string players = playerUnits.Count > 0 ? string.Join(", ", playerUnits.ConvertAll(u => u.name)) : "None";
+        string enemies = enemyUnits.Count > 0 ? string.Join(", ", enemyUnits.ConvertAll(u => u.name)) : "None";
+
+        Debug.Log($"[Unit Status] Players: {players} | Enemies: {enemies}");
     }
 }

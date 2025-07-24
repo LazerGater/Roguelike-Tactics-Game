@@ -11,6 +11,14 @@ public class GridInitializer : MonoBehaviour
 
     private List<Vector2Int> allySpawns = new List<Vector2Int>();
     public List<Vector2Int> AllySpawns => allySpawns;
+    private List<Vector2Int> enemySpawns;
+    private Vector2Int? commanderTile;
+
+
+
+    public List<Vector2Int> EnemySpawns => enemySpawns;
+    public Vector2Int? CommanderTile => commanderTile;
+
     public int PartyLimit { get; private set; }
 
     [SerializeField] private int cellSize = 5;
@@ -23,7 +31,10 @@ public class GridInitializer : MonoBehaviour
         MapData map = MapSelector.GetRandomMap();   // now returns MapData
         int[,] savedValues = map.gridValues;        // movement cost array
         allySpawns = new List<Vector2Int>(map.allySpawns); // copy spawn list
-        PartyLimit =map.partyLimit;
+        enemySpawns = new List<Vector2Int>(map.enemySpawns);
+        commanderTile = map.commanderTile;
+
+        PartyLimit = map.partyLimit;
 
         var dupes = allySpawns
             .GroupBy(p => p)

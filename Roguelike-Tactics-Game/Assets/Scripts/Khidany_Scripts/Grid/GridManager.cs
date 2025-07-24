@@ -54,9 +54,11 @@ public class GridManager : MonoBehaviour
 
         // get the top N selected units
         var chosen = PartyCarrier.Instance.playerParty
-            .OrderBy(d => d.priorityID)
+            .Where(m => m.isSelectedForBattle)
+            .OrderBy(m => m.priorityID)
             .Take(FindFirstObjectByType<GridInitializer>().PartyLimit)
             .ToList();
+
 
         // dedupe and spawn
         var uniqueTiles = spawnTiles.Distinct().ToList();
@@ -71,8 +73,7 @@ public class GridManager : MonoBehaviour
 
             var go = Instantiate(playerPrefab);
             var unit = go.GetComponent<PlayerUnit>();
-            unit.SetupFromData(chosen[i]);
-            unit.Init(grid, pos);
+            unit.Initialize(chosen[i].character, chosen[i].unitClass, grid, pos);
             playerUnits.Add(unit);
             TurnManager.Instance.RegisterPlayerUnit(unit);
         }

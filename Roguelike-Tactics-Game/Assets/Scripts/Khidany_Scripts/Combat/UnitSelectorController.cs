@@ -155,14 +155,20 @@ public class UnitSelectorController : MonoBehaviour
         {
             if (IsTileHighlighted(targetTile))
             {
-                var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), targetTile, selectedUnit.maxMovePoints);
+                var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), targetTile, selectedUnit.Movement);
                 if (path != null)
                 {
-                    selectedUnit.GetComponent<UnitMover>().MoveAlong(path);
+                    selectedUnit.GetComponent<UnitMover>().MoveAlong(path, () =>
+                    {
+                        Debug.Log("[UnitSelector] Movement finished callback.");
+                        selectedUnit.MarkActed();
+                        TurnManager.Instance.NotifyUnitActed();
+                        DeselectUnit();  // Optional: deselect after movement finishes
+                    });
                     pathPreview.ClearPath();
-                    DeselectUnit();
                     return;
                 }
+
             }
             Debug.Log("[UnitSelector] Cannot move to that tile.");
         }

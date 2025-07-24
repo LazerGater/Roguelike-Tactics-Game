@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3892561237286804849}
   - component: {fileID: 4954319933458884013}
   m_Layer: 5
-  m_Name: Heath
+  m_Name: Class
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Health
+  m_text: Class
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -757,8 +757,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30471ac07a2869f4797f2dea11e5beaf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  portraitImage: {fileID: 8590580799002460420}
   nameText: {fileID: 3109907738699180991}
+  classText: {fileID: 4954319933458884013}
   upButton: {fileID: 4276746626030525150}
   downButton: {fileID: 1800411934718593574}
 --- !u!114 &2812347815344266759

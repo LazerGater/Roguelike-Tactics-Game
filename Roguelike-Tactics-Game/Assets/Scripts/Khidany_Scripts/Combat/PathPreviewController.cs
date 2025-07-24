@@ -53,7 +53,7 @@ public class PathPreviewController : MonoBehaviour
         }
 
         // Find path using PlayerPathfinder
-        var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), hoverTile, selectedUnit.maxMovePoints);
+        var path = PlayerPathfinder.FindPath(grid, selectedUnit.GetGridPosition(), hoverTile, selectedUnit.Stats.moveRange);
 
         // If no path or path length < 2 -> clear and return
         if (path == null || path.Count < 2)
