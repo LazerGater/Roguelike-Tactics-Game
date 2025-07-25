@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using Unity.Properties;
 using System.Collections.Generic;
 using UnityEngine.Timeline;
+using UnityEngine.XR;
 
 // TODO: Lines gradually Draw instead of just pop in
 // TODO: Lines come in as groups instead of 
@@ -57,6 +58,11 @@ public class RandomSpawner : MonoBehaviour
         for (float distance = leftBound; distance < rightBound; distance += interval)
         {
             int spawnAmount = Random.Range(0, 4);
+            if (    ( distance == leftBound ) || 
+                    (Mathf.Abs(distance - rightBound) <= 1) ||
+                    (distance == 0)
+                    )
+                spawnAmount = Random.Range(1, 3);
             List<Vector2> spawnedPositions = new List<Vector2>();
 
             // 2. set y bounds for spawning
@@ -116,11 +122,11 @@ public class RandomSpawner : MonoBehaviour
     ///             - etc..
     /// </summary>
     /// <param name="randomSpawnPosition"></param>
+    private List<int> amountOfMarkers = new List<int> { 0, 0, 0, 0, 0 };
     void RandomizationGuide(Vector2 randomSpawnPosition)
     {
         int rand;
         GameObject marker;
-        int[] amountOfMarkers = new int[5];
 
         // Start is Always Battle
         if (randomSpawnPosition.x < leftBound + interval / 1.5)
@@ -150,11 +156,22 @@ public class RandomSpawner : MonoBehaviour
             rand = Random.Range(0, 4);
             if (rand == 4) rand = 0;
         }
-        if (rand == 3 && amountOfMarkers[rand] == ) {
+
+        // Prevent too many markers of certain types
+        if (rand == 1 && amountOfMarkers[rand] >= 2)
+            rand = 2;
+        if (rand == 2 && amountOfMarkers[rand] >= 4)
+            rand = 0;
+        else if (rand == 3 && amountOfMarkers[rand] >= 2)
+            rand = 0;
+        else if (rand == 4 && amountOfMarkers[rand] >= 1 && randomSpawnPosition.x < rightBound - interval / 1.5)
+            rand = 0;
+
 
         // Spawn it
         marker = Instantiate(mapMarkers[rand], randomSpawnPosition, Quaternion.identity);
         amountOfMarkers[rand]++;
+        Debug.Log($"Spawned: {rand}, Totals: [{string.Join(", ", amountOfMarkers)}]");
         spawnedMarkers.Add(marker);
     } // end RandomizationGuide
 
@@ -191,7 +208,6 @@ public class RandomSpawner : MonoBehaviour
 
             // take the lower of 2 randomizations
             int connections = Random.Range(1, Mathf.Min(3, rightSideMarkers.Count + 1));
-            connections = Mathf.Min(Random.Range(1, Mathf.Min(3, rightSideMarkers.Count + 1)), connections);
 
             int addedConnections = 0;
             int index = 0;
