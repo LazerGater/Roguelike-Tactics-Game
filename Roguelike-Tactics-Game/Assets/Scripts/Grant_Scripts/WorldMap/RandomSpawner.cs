@@ -5,8 +5,8 @@ using Unity.Properties;
 using System.Collections.Generic;
 using UnityEngine.Timeline;
 
-// TODO: make it so the markers arent fully randomized, like you always get a town in the middle, or you always get some healing at the end, etc.
-// TODO: draw lines between markers
+// TODO: Lines gradually Draw instead of just pop in
+// TODO: Lines come in as groups instead of 
 
 public class RandomSpawner : MonoBehaviour
 {
@@ -18,10 +18,12 @@ public class RandomSpawner : MonoBehaviour
     private List<GameObject> spawnedMarkers = new List<GameObject>();
     private List<(Vector2 start, Vector2 end)> existingLines = new List<(Vector2, Vector2)>();
 
+
     // Mark Bounds for Spawning and interval between spawns
     public float    leftBound = -6.5f,
                     rightBound = 6.5f,
                     interval = 2f;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -35,6 +37,7 @@ public class RandomSpawner : MonoBehaviour
     void Update()
     {
     } // end update
+
 
     /// <summary>
     /// Spawns in Markers for Overworld Map
@@ -105,47 +108,56 @@ public class RandomSpawner : MonoBehaviour
         StartCoroutine(GenerateLinesBetweenMarkers());
     } // end SpawnMarkersWithDelay
 
+
+    /// <summary>
+    ///         Makes sure Map isnt fully randomized.
+    ///             - Think, middle always has a village / shop
+    ///             - Right Before Boss is always a village
+    ///             - etc..
+    /// </summary>
+    /// <param name="randomSpawnPosition"></param>
     void RandomizationGuide(Vector2 randomSpawnPosition)
     {
         int rand;
         GameObject marker;
+        int[] amountOfMarkers = new int[5];
 
         // Start is Always Battle
         if (randomSpawnPosition.x < leftBound + interval / 1.5)
         {
-            marker = Instantiate(mapMarkers[0], randomSpawnPosition, Quaternion.identity);
+            rand = 0;
         }
-
         // end is always village
         else if (randomSpawnPosition.x > rightBound - interval / 1.5)
         {
-            marker = Instantiate(mapMarkers[4], randomSpawnPosition, Quaternion.identity);
+            rand = 4;
         }
-
         // Middle is always shop, village, or event (skewed more towards event)
         else if ((randomSpawnPosition.x > 0 - interval / 1.5) && (randomSpawnPosition.x < 0 + interval / 1.5))
         {
             rand = Random.Range(1, 4);
             if (rand == 2) rand--;
-            marker = Instantiate(mapMarkers[rand], randomSpawnPosition, Quaternion.identity);
         }
-
-        // Right Middle is always battle, event or mystery
+        // Right Middle is always battle, event, or mystery (Skewed towards battle)
         else if (randomSpawnPosition.x > 0 + interval / 1.5)
         {
-            marker = Instantiate(mapMarkers[Random.Range(0, 2)], randomSpawnPosition, Quaternion.identity);
+            rand = Random.Range(0, 3);
+            if (rand == 0) rand = 0;
         }
-
         // The Rest is all but villages, and skewed more towards battle
         else
         {
             rand = Random.Range(0, 4);
             if (rand == 4) rand = 0;
-            marker = Instantiate(mapMarkers[rand], randomSpawnPosition, Quaternion.identity);
-            print("THE REST " + randomSpawnPosition + "   " + marker);
         }
+        if (rand == 3 && amountOfMarkers[rand] == ) {
+
+        // Spawn it
+        marker = Instantiate(mapMarkers[rand], randomSpawnPosition, Quaternion.identity);
+        amountOfMarkers[rand]++;
         spawnedMarkers.Add(marker);
     } // end RandomizationGuide
+
 
     /// <summary>
     ///     After Markers are spawned on map, run this to generate roads between them
@@ -213,6 +225,7 @@ public class RandomSpawner : MonoBehaviour
         } // end foreach
     } // end GenerateLinesBetweenMarkers
 
+
     /// <summary>
     ///     Creates a line with a start vector and end vector
     /// </summary>
@@ -226,7 +239,37 @@ public class RandomSpawner : MonoBehaviour
         lr.positionCount = 2;
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
+
+        StartCoroutine(AnimateLine(lr, start, end, 0.5f));
     } // end CreateLine
+
+
+    /// <summary>
+    ///         Animates the lines being drawn on the map
+    /// </summary>
+    /// <param name="lr">       Line Renderer           </param>
+    /// <param name="start">    Start Point of Line     </param>
+    /// <param name="end">      End Point of Line       </param>
+    /// <param name="duration"> Duration of animation   </param>
+    /// <returns></returns>
+    IEnumerator AnimateLine(LineRenderer lr, Vector2 start, Vector2 end, float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            Vector2 current = Vector2.Lerp(start, end, t);
+            lr.SetPosition(1, current);
+            yield return null;
+        }
+
+        // Ensure it finishes exactly at the end
+        lr.SetPosition(1, end);
+    }
+
+
 
     /// <summary>
     ///     Checks if lines intersect, if they do, doesn't lay road.

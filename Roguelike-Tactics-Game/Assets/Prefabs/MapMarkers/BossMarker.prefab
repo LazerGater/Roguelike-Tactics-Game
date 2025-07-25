@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7741352302434410997}
   - component: {fileID: 8110575821156037327}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BossMarker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
