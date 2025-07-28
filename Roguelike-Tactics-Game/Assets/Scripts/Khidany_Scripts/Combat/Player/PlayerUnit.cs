@@ -56,42 +56,6 @@ public class PlayerUnit : MonoBehaviour, IBattleUnit
 
     public void ResetTurn() => HasActed = false;
 
-    private void Update()
-    {
-        if (TurnManager.Instance == null || !TurnManager.Instance.IsBattleActive) return;
-        if (HasActed) return;  // Prevent multiple moves
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 mouseWorld = AshenUtil.GridItems.GetMouseWorldPosition();
-            grid.GetXY(mouseWorld, out int cx, out int cy);
-            Vector2Int clicked = new Vector2Int(cx, cy);
-
-            if (clicked == gridPos)
-            {
-                GridManager.Instance.SelectUnit(this);
-                return;
-            }
-
-            if (isSelected && IsHighlighted(clicked))
-            {
-                var path = PlayerPathfinder.FindPath(grid, gridPos, clicked, Stats.moveRange);
-                if (path != null)
-                {
-                    Debug.Log("About to start MoveAlong with callback.");
-
-                    GetComponent<UnitMover>().MoveAlong(path, () =>
-                    {
-                        Debug.Log("Movement finished, marking acted.");
-                        MarkActed();
-                        TurnManager.Instance.NotifyUnitActed();
-                        Deselect();
-                    });
-                }
-            }
-        }
-    }
-
     public void Select()
     {
         isSelected = true;

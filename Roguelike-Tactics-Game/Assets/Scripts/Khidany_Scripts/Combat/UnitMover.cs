@@ -7,6 +7,7 @@ public class UnitMover : MonoBehaviour
 {
     private GridMap grid;
     private IBattleUnit unit;
+    public bool IsMoving { get; private set; } = false;
 
     public void Init(GridMap gridMap)
     {
@@ -28,7 +29,10 @@ public class UnitMover : MonoBehaviour
     }
 
     private IEnumerator MoveRoutine(List<Vector2Int> path, Action onComplete)
+
     {
+        IsMoving = true;
+
         Debug.Log($"Starting movement with {path.Count} steps.");
 
         foreach (var pos in path)
@@ -43,6 +47,8 @@ public class UnitMover : MonoBehaviour
 
             unit.SetGridPos(pos);
         }
+
+        IsMoving = false;
 
         Debug.Log("Movement finished, calling callback.");
         onComplete?.Invoke();

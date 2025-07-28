@@ -5,11 +5,11 @@ using UnityEngine.InputSystem;
 public class UnitSelectorController : MonoBehaviour
 {
     [Header("References")]
-    public CameraPointer pointer;                       // Controller pointer
-    public PathPreviewController pathPreview;          // Path preview arrows
-    public PointerHighlighter pointerHighlighter;      // Grid highlight visual
-    public GridInitializer gridInitializer;            // For GridMap
-    public InputActionAsset inputActions;              // Input System actions
+    public CameraPointer pointer;
+    public PathPreviewController pathPreview;
+    public PointerHighlighter pointerHighlighter;
+    public GridInitializer gridInitializer;
+    public InputActionAsset inputActions;
 
     private GridMap grid;
     private PlayerUnit selectedUnit = null;
@@ -21,7 +21,6 @@ public class UnitSelectorController : MonoBehaviour
     private enum InputMode { Mouse, Controller }
     private InputMode currentInputMode = InputMode.Mouse;
 
-    // Input Actions
     private InputAction confirmAction;
     private InputAction cancelAction;
     private InputAction nextUnitAction;
@@ -29,13 +28,11 @@ public class UnitSelectorController : MonoBehaviour
 
     void Start()
     {
-        // Get grid reference
         if (gridInitializer == null)
             gridInitializer = FindFirstObjectByType<GridInitializer>();
         if (gridInitializer != null)
             grid = gridInitializer.Grid;
 
-        // Bind input actions
         if (inputActions != null)
         {
             confirmAction = inputActions.FindAction("Confirm");
@@ -48,10 +45,10 @@ public class UnitSelectorController : MonoBehaviour
             if (nextUnitAction != null) nextUnitAction.performed += OnNextUnit;
             if (prevUnitAction != null) prevUnitAction.performed += OnPrevUnit;
 
-            if (confirmAction != null) confirmAction.Enable();
-            if (cancelAction != null) cancelAction.Enable();
-            if (nextUnitAction != null) nextUnitAction.Enable();
-            if (prevUnitAction != null) prevUnitAction.Enable();
+            confirmAction?.Enable();
+            cancelAction?.Enable();
+            nextUnitAction?.Enable();
+            prevUnitAction?.Enable();
         }
     }
 
@@ -67,13 +64,15 @@ public class UnitSelectorController : MonoBehaviour
     {
         if (grid == null) return;
 
-        // Detect input mode
+        //  Block inputs while unit is moving
+        if (selectedUnit != null && selectedUnit.GetComponent<UnitMover>().IsMoving)
+            return;
+
         if (Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero)
             currentInputMode = InputMode.Mouse;
         else if (Gamepad.current != null && Gamepad.current.leftStick.ReadValue() != Vector2.zero)
             currentInputMode = InputMode.Controller;
 
-        // Determine hover world position based on mode
         Vector3 worldPos;
         if (currentInputMode == InputMode.Mouse)
         {
@@ -85,12 +84,9 @@ public class UnitSelectorController : MonoBehaviour
             worldPos = pointer.transform.position;
         }
 
-        // Update hover and highlights
         UpdateHoverTile(worldPos);
-        if (pointerHighlighter != null)
-            pointerHighlighter.UpdateHighlight(worldPos);
+        pointerHighlighter?.UpdateHighlight(worldPos);
 
-        // Keyboard fallback for Cancel (Escape) and Confirm (Left Click)
         if (Keyboard.current != null)
         {
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -124,14 +120,12 @@ public class UnitSelectorController : MonoBehaviour
         return selectedUnit != null && selectedUnit.HasMoveHighlight(tile);
     }
 
-    // Input System confirm
     private void OnConfirm(InputAction.CallbackContext ctx)
     {
         Vector3 worldPos = GetActiveWorldPosition();
         HandleConfirm(worldPos);
     }
 
-    // Input System cancel
     private void OnCancel(InputAction.CallbackContext ctx)
     {
         HandleCancel();
@@ -139,6 +133,10 @@ public class UnitSelectorController : MonoBehaviour
 
     private void HandleConfirm(Vector3 worldPos)
     {
+        //  Block confirm if unit is mid-move
+        if (selectedUnit != null && selectedUnit.GetComponent<UnitMover>().IsMoving)
+            return;
+
         grid.GetXY(worldPos, out int tx, out int ty);
         Vector2Int targetTile = new Vector2Int(tx, ty);
 
@@ -163,13 +161,13 @@ public class UnitSelectorController : MonoBehaviour
                         Debug.Log("[UnitSelector] Movement finished callback.");
                         selectedUnit.MarkActed();
                         TurnManager.Instance.NotifyUnitActed();
-                        DeselectUnit();  // Optional: deselect after movement finishes
+                        DeselectUnit();
                     });
                     pathPreview.ClearPath();
                     return;
                 }
-
             }
+
             Debug.Log("[UnitSelector] Cannot move to that tile.");
         }
     }
@@ -183,7 +181,6 @@ public class UnitSelectorController : MonoBehaviour
         }
     }
 
-    // Cycle units
     private void OnNextUnit(InputAction.CallbackContext ctx) => JumpToUnit(1);
     private void OnPrevUnit(InputAction.CallbackContext ctx) => JumpToUnit(-1);
 
@@ -205,13 +202,13 @@ public class UnitSelectorController : MonoBehaviour
             (a.GetGridPosition().x + a.GetGridPosition().y).CompareTo(
             (b.GetGridPosition().x + b.GetGridPosition().y)));
 
-        int px, py;
-        grid.GetXY(pointer.transform.position, out px, out py);
+        grid.GetXY(pointer.transform.position, out int px, out int py);
         Vector2Int pointerTile = new Vector2Int(px, py);
 
         int currentIndex = -1;
         for (int i = 0; i < availableUnits.Count; i++)
-            if (availableUnits[i].GetGridPosition() == pointerTile) currentIndex = i;
+            if (availableUnits[i].GetGridPosition() == pointerTile)
+                currentIndex = i;
 
         int nextIndex = (currentIndex + direction + availableUnits.Count) % availableUnits.Count;
 
@@ -236,6 +233,7 @@ public class UnitSelectorController : MonoBehaviour
     {
         if (selectedUnit != null)
             selectedUnit.Deselect();
+
         selectedUnit = null;
         currentState = State.Idle;
         lastHoverTile = new Vector2Int(-999, -999);
@@ -246,7 +244,8 @@ public class UnitSelectorController : MonoBehaviour
     {
         PlayerUnit[] units = FindObjectsByType<PlayerUnit>(FindObjectsSortMode.None);
         foreach (var u in units)
-            if (u.GetGridPosition() == tile) return u;
+            if (u.GetGridPosition() == tile)
+                return u;
         return null;
     }
 
