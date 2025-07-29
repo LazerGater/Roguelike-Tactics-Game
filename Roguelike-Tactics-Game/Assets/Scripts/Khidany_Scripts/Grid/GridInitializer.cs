@@ -69,6 +69,9 @@ public class GridInitializer : MonoBehaviour
         if (zoom != null) zoom.ConfigureZoom(grid);
         Debug.Log($"Ally spawns for this map: {string.Join(", ", allySpawns)}");
 
+        Vector3 centerPos = grid.GetWorldPosition(grid.width / 2, grid.height / 2) + new Vector3(cellSize, cellSize, 0) * 0.5f;
+
+
     }
 
     private void Update()

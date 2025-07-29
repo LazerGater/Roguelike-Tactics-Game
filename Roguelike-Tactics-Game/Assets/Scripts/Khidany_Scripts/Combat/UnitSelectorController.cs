@@ -9,6 +9,7 @@ public class UnitSelectorController : MonoBehaviour
     public PathPreviewController pathPreview;
     public PointerHighlighter pointerHighlighter;
     public GridInitializer gridInitializer;
+    [SerializeField] private UnitStatsUI unitStatsUI;
     public InputActionAsset inputActions;
 
     private GridMap grid;
@@ -51,6 +52,7 @@ public class UnitSelectorController : MonoBehaviour
             prevUnitAction?.Enable();
         }
     }
+
 
     void OnDestroy()
     {
@@ -113,6 +115,7 @@ public class UnitSelectorController : MonoBehaviour
                     pathPreview.ClearPath();
             }
         }
+
     }
 
     private bool IsTileHighlighted(Vector2Int tile)
