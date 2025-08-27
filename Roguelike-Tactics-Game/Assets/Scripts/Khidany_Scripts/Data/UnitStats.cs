@@ -1,3 +1,5 @@
+using UnityEngine;
+
 [System.Serializable]
 public class UnitStats
 {
@@ -9,10 +11,17 @@ public class UnitStats
     public int luck;
     public int dex;
     public int moveRange;
+    public string displayName;
+    public int level;
+    public Sprite portrait;
+
 
     // Constructor for players (based on CharacterData + ClassData)
+    // Constructor for players (uses baseLevel from CharacterData)
     public UnitStats(CharacterData c, ClassData cl)
     {
+        level = c.baseLevel;
+
         maxHP = c.baseHP + cl.hpMod;
         atk = c.baseAtk + cl.atkMod;
         def = c.baseDef + cl.defMod;
@@ -22,19 +31,29 @@ public class UnitStats
 
         currentHP = maxHP;
         moveRange = cl.moveRange;
+
+        displayName = c.characterName;
+        portrait = c.portrait;
     }
 
+
     // Constructor for enemies (fully custom stats)
-    public UnitStats(int hp, int atk, int def, int speed, int luck, int dex, int moveRange)
+    public UnitStats(CharacterData c, ClassData cl, int level, int hp, int atk, int def, int spd, int luck, int dex)
     {
-        this.maxHP = hp;
-        this.currentHP = hp;
+        this.level = level;
+
+        maxHP = hp;
+        currentHP = hp;
         this.atk = atk;
         this.def = def;
-        this.speed = speed;
+        this.speed = spd;
         this.luck = luck;
         this.dex = dex;
-        this.moveRange = moveRange;
+        moveRange = cl.moveRange;
+
+        displayName = c.characterName;
+        portrait = c.portrait;
     }
+
     public UnitStats() { }
 }

@@ -171,7 +171,23 @@ public class UnitSelectorController : MonoBehaviour
                 }
             }
 
-            Debug.Log("[UnitSelector] Cannot move to that tile.");
+            IBattleUnit blockingUnit = GridManager.Instance.GridMap.GetUnit(targetTile);
+            if (blockingUnit != null)
+            {
+                string unitName = "Unknown";
+
+                if (blockingUnit is EnemyUnit enemy)
+                    unitName = enemy.Stats.displayName;
+                else if (blockingUnit is PlayerUnit player)
+                    unitName = player.Stats.displayName;
+
+                Debug.Log($"[UnitSelector] Cannot move to that tile — blocked by {unitName}.");
+            }
+            else
+            {
+                Debug.Log("[UnitSelector] Cannot move to that tile.");
+            }
+
         }
     }
 

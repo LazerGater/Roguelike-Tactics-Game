@@ -5,6 +5,8 @@ public class PointerHighlighter : MonoBehaviour
     [Header("References")]
     public Camera cam;                       // Drag your main camera if needed
     public GameObject highlightPrefab;       // Pointer highlight prefab
+    [SerializeField] private UnitStatsUI unitStatsUI;
+
 
     [Header("Settings")]
     public GridMap grid;                     // Assign the GridMap reference
@@ -51,6 +53,8 @@ public class PointerHighlighter : MonoBehaviour
         // Snap highlight to that cell's center
         Vector3 cellCenter = grid.GetWorldPosition(x, y) + Vector3.one * (grid.CellSize / 2f);
         currentHighlight.transform.position = cellCenter;
+       // TryShowHoveredUnitStats(new Vector2Int(x, y));
+
 
         // Make sure it's visible
         if (!currentHighlight.activeSelf)
@@ -73,6 +77,11 @@ public class PointerHighlighter : MonoBehaviour
         if (!currentHighlight.activeSelf)
             currentHighlight.SetActive(true);
     }
+    private void TryShowHoveredUnitStats(Vector2Int gridPos)
+    {
+
+    }
+
 
 
 

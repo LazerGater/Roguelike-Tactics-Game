@@ -1035,11 +1035,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1197589502}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa7a241e2daff784bbfbaea5e599e351, type: 3}
+  m_Script: {fileID: 11500000, guid: 7714de74fe73f014e905a753bdcfa6ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   zoomAction: {fileID: 4872218230837717238, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  zoomSpeed: 1
+  zoomSpeed: 5
   padding: 1
 --- !u!1 &1239122417
 GameObject:

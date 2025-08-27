@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(UnitMover))]
-public class PlayerUnit : MonoBehaviour, IBattleUnit
+public class PlayerUnit : MonoBehaviour, IBattleUnit, IHasStats
 {
     [Header("Data References")]
     public CharacterData characterData;
@@ -41,6 +41,8 @@ public class PlayerUnit : MonoBehaviour, IBattleUnit
             Debug.LogError($"Spawn clash at {gridPos}! Destroying self.");
             Destroy(gameObject);
         }
+        grid.SetUnit(gridPos, this); 
+
 
         GetComponent<UnitMover>().Init(grid);
     }

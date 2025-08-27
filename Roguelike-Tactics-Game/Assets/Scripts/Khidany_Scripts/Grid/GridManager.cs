@@ -10,6 +10,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private List<Vector2Int> spawnPositions = new List<Vector2Int>();
 
     private GridMap grid;
+    public GridMap GridMap => grid;
+
     private List<PlayerUnit> playerUnits = new List<PlayerUnit>();
     private PlayerUnit selectedUnit = null;
 

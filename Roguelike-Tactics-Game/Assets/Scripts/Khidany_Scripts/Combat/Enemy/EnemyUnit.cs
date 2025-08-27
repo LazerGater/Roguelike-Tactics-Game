@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(UnitMover))]
-public class EnemyUnit : MonoBehaviour, IBattleUnit
+public class EnemyUnit : MonoBehaviour, IBattleUnit, IHasStats
 {
     [Header("Data References")]
     public CharacterData baseCharacter;    // The generic enemy template (_phold)
@@ -38,6 +38,8 @@ public class EnemyUnit : MonoBehaviour, IBattleUnit
             Debug.LogError($"Enemy spawn clash at {gridPos}! Destroying self.");
             Destroy(gameObject);
         }
+        grid.SetUnit(gridPos, this);
+
 
         // Init mover
         GetComponent<UnitMover>().Init(grid);
@@ -70,16 +72,6 @@ public class EnemyUnit : MonoBehaviour, IBattleUnit
         luck += cl.luckMod;
         dex += cl.dexMod;
 
-        return new UnitStats
-        {
-            maxHP = hp,
-            currentHP = hp,
-            atk = atk,
-            def = def,
-            speed = spd,
-            luck = luck,
-            dex = dex,
-            moveRange = cl.moveRange
-        };
+        return new UnitStats(c, cl, level, hp, atk, def, spd, luck, dex);
     }
 }

@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class CameraZoom2D : MonoBehaviour
 {
     [Header("Input")]
-    public InputActionReference zoomAction; 
+    public InputActionReference zoomAction;
 
     [Header("Settings")]
     public float zoomSpeed = 5f;

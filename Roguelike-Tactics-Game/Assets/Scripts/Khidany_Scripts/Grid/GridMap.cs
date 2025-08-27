@@ -17,6 +17,8 @@ public class GridMap
 
     // New: Store occupied tiles
     private HashSet<Vector2Int> occupiedPositions = new HashSet<Vector2Int>();
+    private Dictionary<Vector2Int, IBattleUnit> unitLookup = new();
+
 
     // Public accessor for cellSize
     public float CellSize => cellSize;
@@ -114,6 +116,7 @@ public class GridMap
         return new Bounds(center, size);
     }
 
+
     public void MarkOccupied(Vector2Int pos)
     {
         if (IsInBounds(pos.x, pos.y)) occupiedPositions.Add(pos);
@@ -133,6 +136,28 @@ public class GridMap
         if (!IsInBounds(pos.x, pos.y)) return false;
         return occupiedPositions.Add(pos);   // HashSet.Add returns false if duplicate
     }
+
+    public void SetUnit(Vector2Int pos, IBattleUnit unit)
+    {
+        if (!IsInBounds(pos.x, pos.y)) return;
+        unitLookup[pos] = unit;
+        MarkOccupied(pos); // optional: keeps other logic consistent
+    }
+
+    public void RemoveUnit(Vector2Int pos)
+    {
+        unitLookup.Remove(pos);
+        MarkUnoccupied(pos);
+    }
+
+    public IBattleUnit GetUnit(Vector2Int pos)
+    {
+        unitLookup.TryGetValue(pos, out var unit);
+        return unit;
+    }
+
+    public bool HasUnit(Vector2Int pos) => unitLookup.ContainsKey(pos);
+
 
 
 }
